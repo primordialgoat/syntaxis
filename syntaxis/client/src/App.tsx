@@ -261,9 +261,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      {/* ── Hero ────────────────────────────────────────────────── */}
-      <Hero compact={hasContent} />
-
       {/* ── Input ───────────────────────────────────────────────── */}
       <div className="w-full px-4 sm:px-6 flex flex-col items-center py-6 sm:py-8">
         <InputPanel onSubmit={handleAnalyze} isLoading={isLoading} error={error} />

@@ -602,15 +602,6 @@ export default function SentenceAnalysis({ result }: Props) {
         </div>
       </motion.div>
 
-      {/* ── Role legend (above clauses) ──────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.08 }}
-      >
-        <RoleLegend />
-      </motion.div>
-
       {/* ── Clause cards ─────────────────────────────────────── */}
       <div>
         {result.clauses.map((clause, i) => (
