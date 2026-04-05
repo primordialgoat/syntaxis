@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputPanel from './components/InputPanel';
 import SentenceAnalysis, { type AnalysisResult } from './components/SentenceAnalysis';
+import About from './components/About';
 
 // ─── Loading messages ─────────────────────────────────────────────────────────
 
@@ -226,6 +227,9 @@ export default function App() {
           ) : null}
         </AnimatePresence>
       </div>
+
+      {/* ── About ───────────────────────────────────────────────── */}
+      <About />
     </div>
   );
 }
