@@ -332,40 +332,6 @@ function WordToken({
   );
 }
 
-// ─── Role Legend ─────────────────────────────────────────────────────────────
-
-const DISPLAYED_ROLES = [
-  'subject', 'verb', 'direct_object', 'indirect_object', 'modifier',
-  'preposition', 'conjunction', 'predicate_nominative', 'predicate_adjective',
-  'vocative', 'other',
-] as const;
-
-function RoleLegend() {
-  return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 mb-5 px-1">
-      <span className="text-[11px] font-sans text-zinc-600 uppercase tracking-widest mr-1 select-none">
-        Key
-      </span>
-      {DISPLAYED_ROLES.map((role) => {
-        const rs = ROLE_STYLES[role];
-        return (
-          <span
-            key={role}
-            className="inline-flex items-center gap-1.5 text-[11px] font-sans text-zinc-400
-                       px-2 py-[3px] rounded-full border border-zinc-800 bg-zinc-900/60 select-none"
-          >
-            <span
-              className="w-[7px] h-[7px] rounded-full shrink-0"
-              style={{ backgroundColor: rs.color }}
-            />
-            {rs.label}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
 // ─── ClauseCard ───────────────────────────────────────────────────────────────
 
 interface ClauseCardProps {
