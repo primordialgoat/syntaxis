@@ -41,36 +41,18 @@ export default function About() {
 
               {/* ABOUT CONTENT — EDIT BELOW */}
 
-              <h2 className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-500/80 mb-3">
-                About Syntaxis
-              </h2>
               <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-6">
-                [Mission statement paragraph]
+                Syntaxis was designed by Brandon Li, a senior at Belmont Hill and longtime classics student, who was frustrated by the lack of a better tool
+                for analyzing classical languages on the Internet. He built Syntaxis as an interactive tool to help him with these ancient languages,
+                which are unique among others in that they heavily rely on word endings and structural precision to determine meaning. 
+                
+                With every user query, Syntaxis first conducts a dictionary lookup from UChicago's Logeion to find word definitions, <u>then goes beyond
+                popular tools like Whitaker's Words and Perseus by using AI to generate advanced analytics regarding sentence flow, case usages, and nested clauses.</u>
+
+                Syntaxis is a better way to understand classical languages, built by students for students. Happy translating!
+
+                Please send feedback, suggestions, and comments to libran@belmonthill.org.
               </p>
-
-              <h3 className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-500/80 mb-3">
-                Who is this for?
-              </h3>
-              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-6">
-                [Audience description paragraph]
-              </p>
-
-              <h3 className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-500/80 mb-3">
-                How it works
-              </h3>
-              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-6">
-                [Tool explanation paragraph]
-              </p>
-
-              <h3 className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-500/80 mb-3">
-                Contact
-              </h3>
-              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75]">
-                [Contact information]
-              </p>
-
-              {/* END ABOUT CONTENT */}
-
             </div>
           </motion.div>
         )}
