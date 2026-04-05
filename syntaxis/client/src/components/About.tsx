@@ -33,26 +33,36 @@ export default function About() {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden w-full flex justify-center"
           >
-            {/* Inner content card with amber left border */}
             <div
               className="mt-6 w-full max-w-[640px] py-5 sm:py-6 pl-5 sm:pl-7 pr-3"
               style={{ borderLeft: '3px solid rgba(201,168,76,0.45)' }}
             >
 
-              {/* ABOUT CONTENT — EDIT BELOW */}
-
-              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-6">
-                Syntaxis was designed by Brandon Li, a senior at Belmont Hill and longtime classics student, who was frustrated by the lack of a better tool
-                for analyzing classical languages on the Internet. He built Syntaxis as an interactive tool to help him with these ancient languages,
-                which are unique among others in that they heavily rely on word endings and structural precision to determine meaning. 
-                
-                With every user query, Syntaxis first conducts a dictionary lookup from UChicago's Logeion to find word definitions, <u>then goes beyond
-                popular tools like Whitaker's Words and Perseus by using AI to generate advanced analytics regarding sentence flow, case usages, and nested clauses.</u>
-
-                Syntaxis is a better way to understand classical languages, built by students for students. Happy translating!
-
-                Please send feedback, suggestions, and comments to libran@belmonthill.org.
+              <p className="font-serif text-[0.925rem] text-zinc-300 leading-[1.75] mb-5">
+                Syntaxis was built because every existing tool for analyzing Latin stops at the dictionary entry.
               </p>
+
+              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
+                Whitaker's Words tells you what a word <em>could</em> mean. Perseus gives you a parsing table.
+                Neither tells you how words actually work together in a sentence — the clause structures,
+                the case relationships, the flow of meaning through a periodic sentence.
+              </p>
+
+              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
+                Syntaxis does. It runs every query through UChicago's Logeion for dictionary data,
+                then uses AI to map sentence architecture: nested clauses, prepositional phrases,
+                syntactic roles, and an English translation — all color-coded and visual.
+              </p>
+
+              <p className="font-serif text-[0.925rem] text-zinc-500 leading-[1.75] mb-0">
+                Built by Brandon Li, a Latin student
+                at <a href="https://www.belmonthill.org" target="_blank" rel="noopener noreferrer" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">Belmont Hill School</a>,
+                as the first piece of something bigger. More soon.
+                <br />
+                <span className="text-zinc-600">Feedback: </span>
+                <a href="mailto:libran@belmonthill.org" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">libran@belmonthill.org</a>
+              </p>
+
             </div>
           </motion.div>
         )}
