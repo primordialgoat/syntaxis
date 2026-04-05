@@ -14,10 +14,9 @@ interface Props {
   onSubmit: (sentence: string) => void;
   isLoading: boolean;
   error: string | null;
-  notLatin: boolean;
 }
 
-export default function InputPanel({ onSubmit, isLoading, error, notLatin }: Props) {
+export default function InputPanel({ onSubmit, isLoading, error }: Props) {
   const [sentence, setSentence] = useState('');
 
   const charCount = sentence.length;
@@ -165,22 +164,6 @@ export default function InputPanel({ onSubmit, isLoading, error, notLatin }: Pro
                 <span>{error}</span>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Not-Latin notice ──────────────────────────────────── */}
-        <AnimatePresence>
-          {notLatin && (
-            <motion.p
-              key="not-latin"
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginTop: 10 }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden text-center text-sm font-sans text-amber-500/90"
-            >
-              ✦ LatinParse is designed for Latin only — please enter a Latin sentence or phrase.
-            </motion.p>
           )}
         </AnimatePresence>
 

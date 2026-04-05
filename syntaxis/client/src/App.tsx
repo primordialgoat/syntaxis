@@ -146,7 +146,6 @@ function LoadingSkeleton() {
 export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notLatin, setNotLatin] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -155,7 +154,6 @@ export default function App() {
   const handleAnalyze = async (sentence: string) => {
     setIsLoading(true);
     setError(null);
-    setNotLatin(false);
 
     try {
       const res = await fetch('/api/analyze', {
@@ -167,17 +165,6 @@ export default function App() {
       const data: unknown = await res.json();
 
       if (!res.ok) {
-        // Special case: not-Latin input — show inline amber message, not the red error box
-        if (
-          typeof data === 'object' &&
-          data !== null &&
-          'error' in data &&
-          (data as { error: unknown }).error === 'not_latin'
-        ) {
-          setNotLatin(true);
-          return;
-        }
-
         const msg =
           typeof data === 'object' &&
           data !== null &&
@@ -204,7 +191,7 @@ export default function App() {
     <div className="min-h-screen">
       {/* ── Input ───────────────────────────────────────────────── */}
       <div className="w-full px-4 sm:px-6 flex flex-col items-center py-6 sm:py-8">
-        <InputPanel onSubmit={handleAnalyze} isLoading={isLoading} error={error} notLatin={notLatin} />
+        <InputPanel onSubmit={handleAnalyze} isLoading={isLoading} error={error} />
       </div>
 
       {/* ── Hairline divider ────────────────────────────────────── */}

@@ -20,7 +20,7 @@ The JSON must follow this exact structure:
           "id": "word_1",
           "text": "original Latin word as it appears",
           "lemma": "dictionary form",
-          "role": "subject" | "verb" | "direct_object" | "indirect_object" | "modifier" | "preposition" | "conjunction" | "pronoun" | "participle" | "infinitive" | "interjection",
+          "role": "subject" | "verb" | "direct_object" | "indirect_object" | "modifier" | "preposition" | "conjunction" | "predicate_nominative" | "predicate_adjective" | "vocative" | "other",
           "partOfSpeech": "noun" | "verb" | "adjective" | "adverb" | "preposition" | "conjunction" | "pronoun" | "participle" | "infinitive" | "interjection",
           "morphology": {
             "case": "nominative|genitive|dative|accusative|ablative|vocative|locative (for nouns, pronouns, adjectives, participles)",
@@ -60,55 +60,6 @@ Rules:
 - groups may be an empty array if no meaningful groupings exist
 - Ensure all wordIds in groups reference valid word ids within the same clause`;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function extractDefinition(raw: string): string {
-  const text = stripHtml(raw);
-  if (!text) return '';
-  if (text.length <= 280) return text;
-  const shortText = text.slice(0, 280);
-  const lastStop = Math.max(
-    shortText.lastIndexOf('. '),
-    shortText.lastIndexOf('; '),
-  );
-  if (lastStop > 60) return shortText.slice(0, lastStop + 1);
-  const lastSpace = shortText.lastIndexOf(' ');
-  return shortText.slice(0, lastSpace > 0 ? lastSpace : 280).trimEnd() + '…';
-}
-
-// ─── Types for augmenting parsed response ─────────────────────────────────────
-
-interface WordEntry {
-  lemma: string;
-  definition?: string;
-  [key: string]: unknown;
-}
-
-interface ClauseEntry {
-  words: WordEntry[];
-  [key: string]: unknown;
-}
-
-interface AnalysisData {
-  clauses: ClauseEntry[];
-  [key: string]: unknown;
-}
-
-// ─── Handler ──────────────────────────────────────────────────────────────────
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -136,29 +87,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const client = new OpenAI({ apiKey, timeout: 30_000 });
 
   try {
-    // ── Latin detection pre-check ──────────────────────────────────────────────
-    const langCheck = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0,
-      max_tokens: 5,
-      messages: [
-        {
-          role: 'user',
-          content: `Is the following text Latin? Answer with only a single word: 'yes' or 'no'. Do not explain. Text: ${sentence.trim()}`,
-        },
-      ],
-    });
-
-    const isLatinAnswer = (langCheck.choices[0]?.message?.content ?? '').trim().toLowerCase();
-    if (isLatinAnswer === 'no') {
-      res.status(400).json({
-        error: 'not_latin',
-        message: 'This tool is designed for Latin only. Please enter a Latin sentence or phrase.',
-      });
-      return;
-    }
-
-    // ── Main analysis ──────────────────────────────────────────────────────────
     const completion = await client.chat.completions.create({
       model: 'gpt-4o',
       temperature: 0,
@@ -175,9 +103,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    let analysisData: AnalysisData;
+    let parsed: unknown;
     try {
-      analysisData = JSON.parse(raw) as AnalysisData;
+      parsed = JSON.parse(raw);
     } catch {
       res.status(502).json({
         error: 'The grammarians are debating this one — try rephrasing or check for typos.',
@@ -186,44 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // ── Fetch Logeion definitions in parallel ──────────────────────────────────
-    const allWords = analysisData.clauses.flatMap((c) => c.words);
-    const uniqueLemmas = [...new Set(allWords.map((w) => w.lemma))];
-    const defMap = new Map<string, string>();
-
-    await Promise.all(
-      uniqueLemmas.map(async (lemma) => {
-        try {
-          const defRes = await fetch(
-            `https://logeion.uchicago.edu/lexicon/${encodeURIComponent(lemma)}`,
-            { signal: AbortSignal.timeout(5000) },
-          );
-          if (!defRes.ok) return;
-          const defData = await defRes.json() as Record<string, unknown>;
-          const rawDef =
-            defData['lewis-short'] ??
-            defData['ls'] ??
-            defData['elementary-lewis'] ??
-            defData['el'];
-          if (rawDef && typeof rawDef === 'string') {
-            const def = extractDefinition(rawDef);
-            if (def) defMap.set(lemma, def);
-          }
-        } catch {
-          // silently skip on timeout or network error
-        }
-      }),
-    );
-
-    // Inject definitions into word objects
-    for (const clause of analysisData.clauses) {
-      for (const word of clause.words) {
-        const def = defMap.get(word.lemma);
-        if (def) word.definition = def;
-      }
-    }
-
-    res.json(analysisData);
+    res.json(parsed);
   } catch (err) {
     if (err instanceof OpenAI.APIError) {
       const status = err.status ?? 502;
