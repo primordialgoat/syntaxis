@@ -31,6 +31,7 @@ interface Word {
   morphology: Morphology;
   translation: string;
   relatedWords: string[];
+  definition?: string;
 }
 
 interface Group {
@@ -212,8 +213,23 @@ function WordTooltip({ word }: { word: Word }) {
         </div>
       )}
 
+      {/* Definition */}
+      {word.definition && (
+        <div className="border-t border-zinc-700/50 pt-2 mt-2 mb-2">
+          <p className="text-[10px] font-sans font-medium text-zinc-600 uppercase tracking-[0.1em] mb-1">
+            Definition
+          </p>
+          <p className="text-[11px] text-zinc-300 font-sans leading-relaxed line-clamp-3">
+            {word.definition}
+          </p>
+        </div>
+      )}
+
       {/* Translation */}
-      <div className="text-xs italic text-zinc-400 font-serif border-t border-zinc-700/50 pt-2 mt-1">
+      <div className={[
+        'text-xs italic text-zinc-400 font-serif',
+        word.definition ? 'pt-1' : 'border-t border-zinc-700/50 pt-2 mt-1',
+      ].join(' ')}>
         &ldquo;{word.translation}&rdquo;
       </div>
     </div>
