@@ -41,17 +41,19 @@ export default function About() {
               <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
                 Tired of using clunky tools like Whitaker's Words to learn classical languages? Wishing there was a better way
                 to understand the complex structure of languages like Latin and Ancient Greek, where tiny word endings make
-                all the difference in determining structure during translation?
+                all the difference in translating?
               </p>
 
               <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
                 As a high school senior at Belmont Hill having studied for 6 years, Brandon definitely was.
                 So he built Syntaxis - a sleek, interactive tool for dissecting classical languages and
-                connecting the dots so that studying the classics becomes <i>facilius</i> rather than <i>odiosius</i>
-                It runs every query through UChicago's Logeion for reliable dictionary definitions, then
-                uses AI to map out sentence architecture: nested clauses, prepositional phrases, case usages,
+                connecting the dots so that studying the classics becomes <i>facilius</i> rather than <i>odiosius</i>.
+                 It runs every query through UChicago's Logeion for precise dictionary definitions, then
+                implements advanced AI to map out sentence architecture: nested clauses, prepositional phrases, case usages,
                 and an English translation, all beautifully color-coded and dynamically interactive.
+              </p>
 
+              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
                 <span className="text-zinc-600">Feedback: </span>
                 <a href="mailto:libran@belmonthill.org" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">libran@belmonthill.org</a>
 
