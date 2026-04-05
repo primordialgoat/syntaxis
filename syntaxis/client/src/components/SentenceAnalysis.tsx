@@ -97,6 +97,29 @@ const GROUP_PALETTE = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const TRANSLATION_STORAGE_KEY = 'syntaxis:show-translation';
+
+function useShowTranslation(): [boolean, () => void] {
+  const [show, setShow] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem(TRANSLATION_STORAGE_KEY);
+      return stored === null ? true : stored === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const toggle = useCallback(() => {
+    setShow((v) => {
+      const next = !v;
+      try { localStorage.setItem(TRANSLATION_STORAGE_KEY, String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
+
+  return [show, toggle];
+}
+
 function cap(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ');
 }
@@ -332,6 +355,39 @@ function WordToken({
   );
 }
 
+// ─── TranslationToggle ───────────────────────────────────────────────────────
+
+function TranslationToggle({ show, onToggle }: { show: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      className={[
+        'flex items-center gap-2 text-xs font-sans px-3 py-1.5 rounded-lg border',
+        'transition-all duration-150',
+        show
+          ? 'border-zinc-700/60 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+          : 'border-zinc-800/40 bg-zinc-900/30 text-zinc-600 hover:border-zinc-700/50 hover:text-zinc-500',
+      ].join(' ')}
+    >
+      {/* Sliding pill */}
+      <span
+        className={[
+          'relative inline-flex h-[12px] w-[20px] shrink-0 rounded-full transition-colors duration-200',
+          show ? 'bg-amber-500/60' : 'bg-zinc-700/80',
+        ].join(' ')}
+      >
+        <span
+          className={[
+            'absolute top-[1px] h-[10px] w-[10px] rounded-full bg-white/80 transition-transform duration-200',
+            show ? 'translate-x-[9px]' : 'translate-x-[1px]',
+          ].join(' ')}
+        />
+      </span>
+      Translation
+    </button>
+  );
+}
+
 // ─── ClauseCard ───────────────────────────────────────────────────────────────
 
 interface ClauseCardProps {
@@ -341,6 +397,7 @@ interface ClauseCardProps {
   setHoveredWordId: (id: string | null) => void;
   wordMap: Map<string, Word>;
   isMobile: boolean;
+  showTranslation: boolean;
 }
 
 function ClauseCard({
@@ -350,6 +407,7 @@ function ClauseCard({
   setHoveredWordId,
   wordMap,
   isMobile,
+  showTranslation,
 }: ClauseCardProps) {
   const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
   const cs = CLAUSE_STYLES[clause.type] ?? CLAUSE_STYLES.subordinate;
@@ -468,11 +526,24 @@ function ClauseCard({
         )}
 
         {/* Clause translation — visually separated */}
-        <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-white/5">
-          <p className="font-serif italic text-zinc-300 text-sm sm:text-base leading-relaxed">
-            {clause.translation}
-          </p>
-        </div>
+        <AnimatePresence initial={false}>
+          {showTranslation && (
+            <motion.div
+              key="clause-tr"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-white/5">
+                <p className="font-serif italic text-zinc-300 text-sm sm:text-base leading-relaxed">
+                  {clause.translation}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
@@ -538,6 +609,7 @@ interface Props {
 export default function SentenceAnalysis({ result }: Props) {
   const isMobile = useIsMobile();
   const [hoveredWordId, setHoveredWordId] = useState<string | null>(null);
+  const [showTranslation, toggleTranslation] = useShowTranslation();
 
   // Global word map across all clauses (for related-word highlighting)
   const wordMap = new Map<string, Word>();
@@ -563,7 +635,8 @@ export default function SentenceAnalysis({ result }: Props) {
           {result.original}
         </p>
         <div className="mt-3 h-px w-20 mx-auto bg-zinc-700/60" />
-        <div className="absolute right-0 top-0">
+        <div className="absolute right-0 top-0 flex flex-col items-end gap-1.5">
+          <TranslationToggle show={showTranslation} onToggle={toggleTranslation} />
           <CopyButton result={result} />
         </div>
       </motion.div>
@@ -579,28 +652,35 @@ export default function SentenceAnalysis({ result }: Props) {
             setHoveredWordId={setHoveredWordId}
             wordMap={wordMap}
             isMobile={isMobile}
+            showTranslation={showTranslation}
           />
         ))}
       </div>
 
       {/* ── English translation bar ───────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: staggerDelay }}
-        className="flex overflow-hidden rounded-2xl border border-zinc-700/30 bg-zinc-900/50 mb-10"
-      >
-        {/* Thick amber left accent */}
-        <div className="w-[5px] shrink-0 bg-amber-500" />
-        <div className="px-5 sm:px-8 py-5 sm:py-6">
-          <p className="text-[11px] font-sans font-medium text-zinc-500 uppercase tracking-[0.12em] mb-2.5">
-            English Translation
-          </p>
-          <p className="font-serif italic text-zinc-100 text-lg sm:text-xl leading-relaxed">
-            &ldquo;{result.fullTranslation}&rdquo;
-          </p>
-        </div>
-      </motion.div>
+      <AnimatePresence>
+        {showTranslation && (
+          <motion.div
+            key="full-tr"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.3, delay: staggerDelay, ease: 'easeInOut' }}
+            className="flex overflow-hidden rounded-2xl border border-zinc-700/30 bg-zinc-900/50 mb-10"
+          >
+            {/* Thick amber left accent */}
+            <div className="w-[5px] shrink-0 bg-amber-500" />
+            <div className="px-5 sm:px-8 py-5 sm:py-6">
+              <p className="text-[11px] font-sans font-medium text-zinc-500 uppercase tracking-[0.12em] mb-2.5">
+                English Translation
+              </p>
+              <p className="font-serif italic text-zinc-100 text-lg sm:text-xl leading-relaxed">
+                &ldquo;{result.fullTranslation}&rdquo;
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
