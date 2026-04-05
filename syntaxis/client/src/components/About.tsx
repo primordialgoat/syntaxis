@@ -39,8 +39,8 @@ export default function About() {
             >
 
               <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
-                Tired of using clunky tools like Whitaker's Words in your classics courses? Wish there was a
-                better way to make sense of beautiful classical languages like Latin and Ancient Greek, where
+                Tired of using clunky tools like Whitaker's Words to make sense of the classics? Wish there was a
+                better way to understand beautiful classical languages like Latin and Ancient Greek, where
                 tiny word endings make all the difference in translation?
               </p>
 
