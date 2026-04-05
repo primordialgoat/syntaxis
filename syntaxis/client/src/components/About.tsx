@@ -38,31 +38,25 @@ export default function About() {
               style={{ borderLeft: '3px solid rgba(201,168,76,0.45)' }}
             >
 
-              <p className="font-serif text-[0.925rem] text-zinc-300 leading-[1.75] mb-5">
-                Syntaxis was built because every existing tool for analyzing Latin stops at the dictionary entry.
+              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
+                Tired of using clunky tools like Whitaker's Words to learn classical languages? Wishing there was a better way
+                to understand the complex structure of languages like Latin and Ancient Greek, where tiny word endings make
+                all the difference in determining structure during translation?
               </p>
 
               <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
-                Whitaker's Words tells you what a word <em>could</em> mean. Perseus gives you a parsing table.
-                Neither tells you how words actually work together in a sentence — the clause structures,
-                the case relationships, the flow of meaning through a periodic sentence.
-              </p>
+                As a high school senior at Belmont Hill having studied for 6 years, Brandon definitely was.
+                So he built Syntaxis - a sleek, interactive tool for dissecting classical languages and
+                connecting the dots so that studying the classics becomes <i>facilius</i> rather than <i>odiosius</i>
+                It runs every query through UChicago's Logeion for reliable dictionary definitions, then
+                uses AI to map out sentence architecture: nested clauses, prepositional phrases, case usages,
+                and an English translation, all beautifully color-coded and dynamically interactive.
 
-              <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
-                Syntaxis does. It runs every query through UChicago's Logeion for dictionary data,
-                then uses AI to map sentence architecture: nested clauses, prepositional phrases,
-                syntactic roles, and an English translation — all color-coded and visual.
-              </p>
-
-              <p className="font-serif text-[0.925rem] text-zinc-500 leading-[1.75] mb-0">
-                Built by Brandon Li, a Latin student
-                at <a href="https://www.belmonthill.org" target="_blank" rel="noopener noreferrer" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">Belmont Hill School</a>,
-                as the first piece of something bigger. More soon.
-                <br />
                 <span className="text-zinc-600">Feedback: </span>
                 <a href="mailto:libran@belmonthill.org" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">libran@belmonthill.org</a>
-              </p>
 
+                More to come soon.
+              </p>
             </div>
           </motion.div>
         )}
