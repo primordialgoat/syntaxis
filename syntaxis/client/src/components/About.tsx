@@ -53,7 +53,7 @@ export default function About() {
               </p>
 
               <p className="font-serif text-[0.925rem] text-zinc-400 leading-[1.75] mb-5">
-                <span className="text-zinc-600">Feedback: </span>
+                <span className="text-zinc-400">Feedback: </span>
                 <a href="mailto:libran@belmonthill.org" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">libran@belmonthill.org</a>
               </p>
 
