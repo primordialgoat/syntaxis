@@ -6,8 +6,8 @@ const MAX_CHARS = 500;
 const EXAMPLES = [
   { text: 'Gallia est omnis divisa in partes tres.', author: 'Caesar' },
   { text: 'Arma virumque cano, Troiae qui primus ab oris.', author: 'Vergil' },
-  { text: 'Senatus Populusque Romanus.', author: 'SPQR' },
-  { text: 'Forsan et haec olim meminisse iuvabit.', author: 'Vergil' },
+  { text: 'Quo usque tandem abutere, Catilina, patientia nostra?', author: 'Cicero' },
+  { text: 'Dum Romae consulitur, Saguntum expugnatur.', author: 'Livy' },
 ] as const;
 
 interface Props {
