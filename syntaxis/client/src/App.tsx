@@ -7,7 +7,8 @@ import About from './components/About';
 // ─── Loading messages ─────────────────────────────────────────────────────────
 
 const LOADING_MESSAGES = [
-  'Reading the Latin carefully...',
+  'Reading this one carefully...',
+  'Looking up definitions...',
   'Identifying clauses and cases...',
   'Almost ready — this one\'s interesting!',
 ] as const;

@@ -5,9 +5,9 @@ const MAX_CHARS = 500;
 
 const EXAMPLES = [
   { text: 'Gallia est omnis divisa in partes tres.', author: 'Caesar' },
-  { text: 'Arma virumque cano.', author: 'Vergil' },
-  { text: 'Omnia vincit amor.', author: 'Vergil' },
+  { text: 'Arma virumque cano, Troiae qui primus ab oris.', author: 'Vergil' },
   { text: 'Senatus Populusque Romanus.', author: 'SPQR' },
+  { text: 'Forsan et haec olim meminisse iuvabit.', author: 'Vergil' },
 ] as const;
 
 interface Props {
@@ -58,7 +58,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
           transition={{ duration: 0.55, delay: 0.18 }}
           className="mt-3 font-serif italic text-zinc-500 text-sm tracking-widest"
         >
-          sententia clara fit
+          sententia clara fiat!
         </motion.p>
       </div>
 
@@ -86,7 +86,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
             type="text"
             value={sentence}
             onChange={(e) => setSentence(e.target.value)}
-            placeholder="Enter a Latin sentence…"
+            placeholder="Enter a sentence…"
             disabled={isLoading}
             spellCheck={false}
             autoComplete="off"
