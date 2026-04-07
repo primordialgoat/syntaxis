@@ -45,12 +45,17 @@ export default function About() {
               </p>
 
               <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
-                As a 6-year student of the classics at Belmont Hill School, Brandon definitely was.
-                So he built Syntaxis - a sleek, interactive tool for dissecting classical languages and
+                As a 6-year student of the classics at Belmont Hill School, Brandon Li '26 definitely was.
+                So with the support of the BH classics department, he built Syntaxis - a sleek, interactive tool for dissecting classical languages and
                 connecting the dots, so that studying the classics is <i>laetius</i> rather than <i>odiosius</i>, as it should be.
                 It runs every query through UChicago's Logeion for precise dictionary definitions, then
                 implements advanced AI to map out sentence architecture: nested clauses, prepositional phrases, case usages,
                 and an optional English translation, all beautifully color-coded and dynamically interactive.
+              </p>
+
+              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
+                Whether learning Latin or Ancient Greek for the first time, translating passages for coursework, or simply
+                studying classical languages for the pure joy of it, Syntaxis provides a better way to make sense of the classics.
               </p>
 
               <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
