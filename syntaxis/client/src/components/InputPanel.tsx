@@ -62,6 +62,11 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         </motion.p>
       </div>
 
+      {/* ── Functional descriptor ──────────────────────────────── */}
+      <p className="font-sans text-sm text-zinc-500 text-center mb-6 max-w-lg mx-auto">
+        Paste any Latin sentence. Syntaxis maps the syntax, labels every word, and shows how it all connects.
+      </p>
+
       {/* ── Search bar + form ───────────────────────────────────── */}
       <motion.form
         initial={{ opacity: 0, y: 10 }}
@@ -102,18 +107,15 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
           <div className="w-px my-[14px] bg-zinc-700/60 shrink-0" />
 
           {/* Right col: button (top) + counter (bottom) */}
-          <div className="flex flex-col items-end justify-between py-[10px] pl-3 pr-3 shrink-0 w-[110px] sm:w-[128px]">
+          <div className="flex flex-col items-end justify-between py-[10px] pl-3 pr-3 shrink-0 w-[130px] sm:w-[150px]">
             <button
               type="submit"
               disabled={!canSubmit}
               className={[
-                'flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-xl',
-                'font-sans font-semibold text-sm transition-all duration-150',
-                canSubmit
-                  ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/25'
-                  : isLoading
-                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                  : 'bg-zinc-800 text-zinc-600 cursor-not-allowed',
+                'flex items-center gap-1.5 px-5 py-2 rounded-xl',
+                'font-sans font-bold text-base transition-all duration-150',
+                'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/25',
+                !canSubmit ? 'cursor-not-allowed' : '',
               ].join(' ')}
             >
               {isLoading ? (
@@ -130,7 +132,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
                   <span className="hidden sm:inline">Wait…</span>
                 </>
               ) : (
-                'Analyze'
+                'Analyze →'
               )}
             </button>
 
