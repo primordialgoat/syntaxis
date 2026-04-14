@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Analytics } from '@vercel/analytics/react';
 import InputPanel from './components/InputPanel';
 import SentenceAnalysis, { type AnalysisResult } from './components/SentenceAnalysis';
 import About from './components/About';
@@ -238,6 +239,7 @@ export default function App() {
 
       {/* ── About ───────────────────────────────────────────────── */}
       <About />
+      <Analytics />
     </div>
   );
 }
