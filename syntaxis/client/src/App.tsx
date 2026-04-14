@@ -189,13 +189,6 @@ export default function App() {
     }
   };
 
-  // Auto-run the Caesar example on first mount so users see the analyzer
-  // output immediately without having to click anything.
-  useEffect(() => {
-    handleAnalyze('Gallia est omnis divisa in partes tres.');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="min-h-screen">
       {/* ── Input ───────────────────────────────────────────────── */}
