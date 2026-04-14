@@ -1,15 +1,23 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import posthog from 'posthog-js';
 
 export default function About() {
   const [open, setOpen] = useState(false);
+
+  const handleToggle = () => {
+    setOpen((v) => {
+      if (!v) posthog.capture('about_opened');
+      return !v;
+    });
+  };
 
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 pt-6 pb-12">
 
       {/* ── Trigger ────────────────────────────────────────────────── */}
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggle}
         className="flex items-center gap-1.5 text-[11px] font-sans uppercase tracking-[0.16em] text-zinc-600 hover:text-zinc-400 transition-colors duration-150 select-none"
       >
         About Syntaxis

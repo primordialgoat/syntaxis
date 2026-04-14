@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import posthog from 'posthog-js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -223,16 +224,41 @@ function WordToken({
 }: WordTokenProps) {
   const [hovered, setHovered] = useState(false);
   const rs = ROLE_STYLES[word.role] ?? ROLE_STYLES.other;
+  const inspectTimerRef = useRef<number | null>(null);
 
   const handleHoverStart = useCallback(() => {
     setHovered(true);
     onWordHover();
-  }, [onWordHover]);
+    if (inspectTimerRef.current !== null) {
+      window.clearTimeout(inspectTimerRef.current);
+    }
+    inspectTimerRef.current = window.setTimeout(() => {
+      posthog.capture('word_inspected', {
+        word: word.text,
+        lemma: word.lemma,
+        partOfSpeech: word.partOfSpeech,
+        role: word.role,
+      });
+      inspectTimerRef.current = null;
+    }, 1000);
+  }, [onWordHover, word.text, word.lemma, word.partOfSpeech, word.role]);
 
   const handleHoverEnd = useCallback(() => {
     setHovered(false);
     onWordUnhover();
+    if (inspectTimerRef.current !== null) {
+      window.clearTimeout(inspectTimerRef.current);
+      inspectTimerRef.current = null;
+    }
   }, [onWordUnhover]);
+
+  useEffect(() => {
+    return () => {
+      if (inspectTimerRef.current !== null) {
+        window.clearTimeout(inspectTimerRef.current);
+      }
+    };
+  }, []);
 
   // The bottom-border color is the group color if in a highlighted group, otherwise role color
   const bottomColor = groupColor ?? rs.color;
@@ -534,6 +560,13 @@ export default function SentenceAnalysis({ result }: Props) {
   const [hoveredWordId, setHoveredWordId] = useState<string | null>(null);
   const [showTranslation, toggleTranslation] = useShowTranslation();
 
+  const handleToggleTranslation = useCallback(() => {
+    posthog.capture('translation_toggled', {
+      new_state: showTranslation ? 'hidden' : 'visible',
+    });
+    toggleTranslation();
+  }, [showTranslation, toggleTranslation]);
+
   // Global word map across all clauses (for related-word highlighting)
   const wordMap = new Map<string, Word>();
   for (const clause of result.clauses) {
@@ -575,7 +608,7 @@ export default function SentenceAnalysis({ result }: Props) {
       </div>
 
       {/* ── Translation divider toggle ────────────────────────── */}
-      <TranslationDivider show={showTranslation} onToggle={toggleTranslation} />
+      <TranslationDivider show={showTranslation} onToggle={handleToggleTranslation} />
 
       {/* ── English translation bar ───────────────────────────── */}
       <AnimatePresence>

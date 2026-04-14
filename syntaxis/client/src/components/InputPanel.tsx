@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import posthog from 'posthog-js';
 
 const MAX_CHARS = 500;
 
@@ -25,12 +26,28 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (canSubmit) onSubmit(sentence.trim());
+    if (canSubmit) {
+      const trimmed = sentence.trim();
+      posthog.capture('sentence_analyzed', {
+        sentence: trimmed,
+        sentence_length: trimmed.length,
+        source: 'manual',
+        example_author: null,
+      });
+      onSubmit(trimmed);
+    }
   };
 
-  const handleExample = (text: string) => {
+  const handleExample = (text: string, author: string) => {
+    const trimmed = text.trim();
     setSentence(text);
-    onSubmit(text.trim());
+    posthog.capture('sentence_analyzed', {
+      sentence: trimmed,
+      sentence_length: trimmed.length,
+      source: 'example_chip',
+      example_author: author,
+    });
+    onSubmit(trimmed);
   };
 
   const counterColor = overLimit
@@ -176,7 +193,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
               key={ex.text}
               type="button"
               disabled={isLoading}
-              onClick={() => handleExample(ex.text)}
+              onClick={() => handleExample(ex.text, ex.author)}
               className={[
                 'group flex items-center gap-1.5 pl-3 pr-2.5 py-1 rounded-full text-xs',
                 'border border-zinc-800 bg-zinc-900/40 font-sans',
