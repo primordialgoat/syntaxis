@@ -81,7 +81,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
 
       {/* ── Functional descriptor ──────────────────────────────── */}
       <p className="font-sans text-sm text-zinc-500 text-center mb-6 max-w-lg mx-auto">
-        Paste any Latin or Ancient Greek sentence. Syntaxis gathers precise definitions from UChicago's Logeion and maps syntax with advanced AI, interactively showing how it all connects.
+        Paste any Latin or Ancient Greek sentence - Syntaxis will gather precise definitions from UChicago's Logeion and map sentence structure with advanced AI, interactively showing how it all connects. Happy translating!
       </p>
 
       {/* ── Search bar + form ───────────────────────────────────── */}
