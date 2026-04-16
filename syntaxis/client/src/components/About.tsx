@@ -47,7 +47,7 @@ export default function About() {
             >
 
               <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
-                Tired of using clunky tools like Whitaker's Words to try to make sense of the classics? Wish there was a
+                Tired of using clunky tools like Whitaker's Words to try to make sense of the classics? Tired of Claude and ChatGPT spitting out translations that skip past the syntax? Wish there was a
                 better way to understand beautiful classical languages like Latin and Ancient Greek, where
                 tiny word endings make all the difference in translation?
               </p>
