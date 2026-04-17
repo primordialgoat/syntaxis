@@ -9,7 +9,7 @@
 
   body {
     min-height: 100%;
-    font-size: 16px;
+    font-size: 17px;
     background-color: #ffffff;
     @apply text-zinc-950 antialiased;
     position: relative;
