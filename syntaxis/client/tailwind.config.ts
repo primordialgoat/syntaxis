@@ -5,8 +5,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['EB Garamond', 'Georgia', 'serif'],
+        serif: ['Lora', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        fraunces: ['Fraunces', 'Georgia', 'serif'],
+        caveat: ['Caveat', 'cursive'],
       },
     },
   },

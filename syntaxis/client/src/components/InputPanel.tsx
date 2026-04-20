@@ -51,89 +51,90 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
   };
 
   const counterColor = overLimit
-    ? 'text-red-400'
+    ? '#b94a48'
     : charCount > MAX_CHARS * 0.85
-    ? 'text-amber-500'
-    : 'text-zinc-500';
+    ? 'var(--amber)'
+    : 'var(--ink-muted)';
 
   return (
-    <div className="w-full max-w-[760px] mx-auto">
-      {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="text-center mb-10">
-        <motion.h1
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-          className="font-serif text-[3.25rem] sm:text-[4rem] leading-none tracking-tight text-amber-400"
-          style={{ textShadow: '0 0 80px rgba(251,191,36,0.2)' }}
-        >
-          Syntaxis
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.55, delay: 0.18 }}
-          className="mt-3 font-serif italic text-zinc-500 text-sm tracking-widest"
-        >
-          sententia clara fiat!
-        </motion.p>
-      </div>
+    <div className="w-full max-w-[640px] mx-auto">
+      {/* ── Card with dashed border halo ─────────────────────────── */}
+      <div style={{ position: 'relative' }}>
+        {/* Dashed halo */}
+        <div style={{
+          position: 'absolute',
+          inset: '-6px',
+          border: '1px dashed var(--rule)',
+          borderRadius: '22px',
+          pointerEvents: 'none',
+        }} />
 
-      {/* ── Functional descriptor ──────────────────────────────── */}
-      <p className="font-sans text-sm text-zinc-500 text-center mb-6 max-w-lg mx-auto">
-        Paste any Latin or Ancient Greek sentence - Syntaxis will gather precise definitions from UChicago's Logeion and map sentence structure with advanced AI, interactively showing how it all connects. Happy translating!
-      </p>
+        <div style={{
+          background: 'var(--cream)',
+          border: '1.5px solid var(--rule)',
+          borderRadius: '18px',
+          padding: '18px',
+          boxShadow: 'var(--shadow)',
+          position: 'relative',
+        }}>
+          {/* ── Input row ──────────────────────────────────────────── */}
+          <form
+            onSubmit={handleSubmit}
+            className="input-focus-ring"
+            style={{
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+              background: '#ffffff',
+              border: error ? '1.5px solid #b94a48' : '1.5px solid var(--rule)',
+              borderRadius: '14px',
+              padding: '6px 6px 6px 16px',
+              transition: 'border-color .2s, box-shadow .2s',
+            }}
+          >
+            <input
+              type="text"
+              value={sentence}
+              onChange={(e) => setSentence(e.target.value)}
+              placeholder="Try: Gallia est omnis divisa in partes tres…"
+              disabled={isLoading}
+              spellCheck={false}
+              autoComplete="off"
+              style={{
+                flex: 1,
+                border: 0,
+                outline: 0,
+                background: 'transparent',
+                fontFamily: "'Lora', Georgia, serif",
+                fontStyle: 'italic',
+                fontSize: '17px',
+                padding: '12px 4px',
+                color: 'var(--ink)',
+                minWidth: 0,
+              }}
+            />
 
-      {/* ── Search bar + form ───────────────────────────────────── */}
-      <motion.form
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.22 }}
-        onSubmit={handleSubmit}
-      >
-        {/* ── Single-line search bar ────────────────────────────── */}
-        <div
-          className={[
-            'flex items-stretch h-[68px] rounded-2xl transition-all duration-200',
-            error
-              ? 'ring-1 ring-red-500/50'
-              : 'focus-within:ring-1 focus-within:ring-amber-500/40',
-            'ring-1',
-            error ? 'ring-red-500/40' : 'ring-zinc-700/60',
-            'bg-zinc-900/70',
-          ].join(' ')}
-        >
-          {/* Text input */}
-          <input
-            type="text"
-            value={sentence}
-            onChange={(e) => setSentence(e.target.value)}
-            placeholder="Enter a sentence…"
-            disabled={isLoading}
-            spellCheck={false}
-            autoComplete="off"
-            className={[
-              'flex-1 min-w-0 h-full pl-5 sm:pl-7 pr-3 bg-transparent',
-              'font-serif text-base sm:text-[1.125rem] text-zinc-100',
-              'placeholder:text-zinc-600 focus:outline-none',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-            ].join(' ')}
-          />
-
-          {/* Vertical rule */}
-          <div className="w-px my-[14px] bg-zinc-700/60 shrink-0" />
-
-          {/* Right col: button (top) + counter (bottom) */}
-          <div className="flex flex-col items-end justify-between py-[10px] pl-3 pr-3 shrink-0 w-[130px] sm:w-[150px]">
             <button
               type="submit"
               disabled={!canSubmit}
-              className={[
-                'flex items-center gap-1.5 px-5 py-2 rounded-xl',
-                'font-sans font-bold text-base transition-all duration-150',
-                'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/25',
-                !canSubmit ? 'cursor-not-allowed' : '',
-              ].join(' ')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                background: 'var(--amber)',
+                color: 'var(--cream)',
+                border: 0,
+                borderRadius: '10px',
+                fontFamily: "'Lora', Georgia, serif",
+                fontSize: '15px',
+                fontWeight: 600,
+                cursor: canSubmit ? 'pointer' : 'not-allowed',
+                opacity: canSubmit ? 1 : 0.55,
+                boxShadow: canSubmit ? '0 2px 0 var(--amber-deep)' : 'none',
+                transition: 'transform .15s, box-shadow .15s',
+                flexShrink: 0,
+              }}
             >
               {isLoading ? (
                 <>
@@ -152,65 +153,76 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
                 'Analyze →'
               )}
             </button>
+          </form>
 
-            {/* Char counter — invisible when empty to preserve layout */}
-            <span
-              className={[
-                'text-[10px] font-sans tabular-nums transition-colors duration-150 leading-none',
-                charCount === 0 ? 'invisible' : counterColor,
-              ].join(' ')}
-            >
-              {charCount} / {MAX_CHARS}
-            </span>
+          {/* ── Error ──────────────────────────────────────────────── */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div
+                  className="flex items-start gap-2 px-4 py-3 rounded-xl text-sm font-sans"
+                  style={{
+                    background: 'rgba(185,74,72,0.08)',
+                    border: '1px solid rgba(185,74,72,0.3)',
+                    color: '#873735',
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mt-0.5 shrink-0">
+                    <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── Example chips ──────────────────────────────────────── */}
+          <div className="mt-4 flex flex-wrap gap-2 justify-center">
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex.text}
+                type="button"
+                disabled={isLoading}
+                onClick={() => handleExample(ex.text, ex.author)}
+                className="flex items-center gap-2 py-[7px] px-3 rounded-full transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  border: '1.2px solid var(--rule)',
+                  background: 'transparent',
+                  color: 'var(--ink-soft)',
+                  fontFamily: "'Lora', Georgia, serif",
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontStyle: 'italic' }}>{ex.text.replace(/\.$/, '').replace(/…$/, '')}</span>
+                <span style={{
+                  fontFamily: "'Caveat', cursive",
+                  color: 'var(--terracotta)',
+                  fontSize: '15px',
+                  fontStyle: 'normal',
+                }}>— {ex.author}</span>
+              </button>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* ── Error ────────────────────────────────────────────── */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              key="error"
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-950/40 border border-red-500/25 text-red-400 text-sm font-sans">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mt-0.5 shrink-0">
-                  <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                </svg>
-                <span>{error}</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Example chips ─────────────────────────────────────── */}
-        <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex.text}
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleExample(ex.text, ex.author)}
-              className={[
-                'group flex items-center gap-1.5 pl-3 pr-2.5 py-1 rounded-full text-xs',
-                'border border-zinc-800 bg-zinc-900/40 font-sans',
-                'hover:border-zinc-600 hover:bg-zinc-800/60',
-                'transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed',
-              ].join(' ')}
-            >
-              <span className="font-serif italic text-zinc-400 group-hover:text-zinc-200 transition-colors">
-                {ex.text.replace(/\.$/, '')}
-              </span>
-              <span className="text-zinc-600 group-hover:text-zinc-500 transition-colors font-sans not-italic">
-                — {ex.author}
-              </span>
-            </button>
-          ))}
-        </div>
-      </motion.form>
+      {/* Char counter */}
+      {charCount > 0 && (
+        <p
+          className="text-center text-[10px] font-sans mt-2 tabular-nums transition-colors duration-150"
+          style={{ color: counterColor }}
+        >
+          {charCount} / {MAX_CHARS}
+        </p>
+      )}
     </div>
   );
 }
