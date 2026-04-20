@@ -13,24 +13,14 @@ export default function About() {
   };
 
   return (
-    <div
-      id="about"
-      className="w-full flex flex-col items-center px-4 sm:px-6 pt-6 pb-12"
-      style={{ maxWidth: '760px', margin: '0 auto' }}
-    >
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 pt-6 pb-12">
+
       {/* ── Trigger ────────────────────────────────────────────────── */}
       <button
         onClick={handleToggle}
-        className="flex items-center gap-1.5 select-none transition-colors duration-150"
-        style={{
-          fontFamily: "'Lora', Georgia, serif",
-          fontSize: '11.5px',
-          letterSpacing: '0.24em',
-          textTransform: 'uppercase',
-          color: 'var(--amber-deep)',
-        }}
+        className="flex items-center gap-1.5 text-[11px] font-sans uppercase tracking-[0.16em] text-zinc-600 hover:text-zinc-400 transition-colors duration-150 select-none"
       >
-        — About Syntaxis —
+        About Syntaxis
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.25, ease: 'easeInOut' }}
@@ -49,46 +39,38 @@ export default function About() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden w-full"
+            className="overflow-hidden w-full flex justify-center"
           >
             <div
-              className="mt-5 py-1.5 pl-6 pr-4"
-              style={{ borderLeft: '3px solid var(--amber)' }}
+              className="mt-6 w-full max-w-[736px] py-[23px] sm:py-[28px] pl-[23px] sm:pl-[32px] pr-[14px]"
+              style={{ borderLeft: '3.5px solid rgba(201,168,76,0.45)' }}
             >
-              <p className="font-serif mb-4" style={{ fontSize: '16.5px', color: 'var(--ink-soft)', lineHeight: '1.75' }}>
-                Tired of clunky tools like Whitaker's Words when trying to make sense of the classics? Wish there were a
-                friendlier way to understand beautiful classical languages like Latin and Ancient Greek, where tiny
-                word-endings make all the difference in translation?
+
+              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
+                Tired of using clunky tools like Whitaker's Words to try to make sense of the classics? Wish there was a
+                better way to understand beautiful classical languages like Latin and Ancient Greek, where
+                tiny word endings make all the difference in translation?
               </p>
 
-              <p className="font-serif mb-4" style={{ fontSize: '16.5px', color: 'var(--ink-soft)', lineHeight: '1.75' }}>
-                As a 6-year student of the classics at Belmont Hill School, Brandon Li '26 felt the same way.
-                So — with the support of the BH classics department — he built Syntaxis: a warm, interactive workbench
-                for dissecting classical languages and connecting the dots, so that studying the classics is{' '}
-                <i>laetius</i> rather than <i>odiosus</i>, as it should be.
+              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
+                As a 6-year student of the classics at Belmont Hill School, Brandon Li '26 definitely was.
+                So with the support of the BH classics department, he built Syntaxis - a sleek, interactive tool for dissecting classical languages and
+                connecting the dots, so that studying the classics is <i>laetius</i> rather than <i>odiosius</i>, as it should be.
+                It runs every query through UChicago's Logeion for precise dictionary definitions, then
+                implements advanced AI to map out sentence architecture: nested clauses, prepositional phrases, case usages,
+                and an optional English translation, all beautifully color-coded and dynamically interactive.
               </p>
 
-              <p className="font-serif mb-4" style={{ fontSize: '16.5px', color: 'var(--ink-soft)', lineHeight: '1.75' }}>
-                It runs every query through UChicago's Logeion for precise dictionary definitions, then uses careful AI
-                prompting to map out the sentence architecture: nested clauses, prepositional phrases, case usage, and
-                an optional English translation — all beautifully color-coded and dynamically interactive.
+              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
+                Whether learning Latin or Ancient Greek for the first time, translating passages for coursework, or simply
+                studying classical languages for the pure joy of it, Syntaxis provides a better way to make sense of the classics.
               </p>
 
-              <p className="font-serif mb-4" style={{ fontSize: '16.5px', color: 'var(--ink-soft)', lineHeight: '1.75' }}>
-                Whether you're learning Latin or Ancient Greek for the first time, translating passages for coursework,
-                or simply studying classical languages for the pure joy of it — Syntaxis is here to make sense of the
-                classics with you.
+              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
+                <span className="text-zinc-400">Comments and Feedback: </span>
+                <a href="mailto:lllenterprises68@gmail.com" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">lllenterprises68@gmail.com</a>
               </p>
 
-              <p className="font-serif" style={{ fontSize: '16.5px', color: 'var(--ink-soft)', lineHeight: '1.75' }}>
-                Comments and feedback:{' '}
-                <a
-                  href="mailto:lllenterprises68@gmail.com"
-                  style={{ color: 'var(--amber-deep)', textDecoration: 'underline', textDecorationColor: 'var(--amber)' }}
-                >
-                  lllenterprises68@gmail.com
-                </a>
-              </p>
             </div>
           </motion.div>
         )}

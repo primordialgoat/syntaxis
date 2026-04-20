@@ -5,10 +5,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['Lora', 'Georgia', 'serif'],
+        serif: ['EB Garamond', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        fraunces: ['Fraunces', 'Georgia', 'serif'],
-        caveat: ['Caveat', 'cursive'],
       },
     },
   },
