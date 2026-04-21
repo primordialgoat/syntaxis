@@ -68,9 +68,9 @@ export default function FeedbackForm() {
   };
 
   return (
-    <div className="w-full flex flex-col items-center px-4 sm:px-6 pt-6 pb-6">
-      <div className="w-full max-w-[736px]">
-        <div className="text-[11px] font-sans uppercase tracking-[0.16em] text-zinc-600 mb-3 select-none">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 pt-4 pb-4">
+      <div className="w-full max-w-[515px]">
+        <div className="text-[10px] font-sans uppercase tracking-[0.16em] text-zinc-600 mb-2 select-none">
           Send feedback
         </div>
 
@@ -82,7 +82,7 @@ export default function FeedbackForm() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="rounded-xl px-4 py-4 font-serif italic text-amber-400"
+              className="rounded-lg px-3 py-2.5 text-sm font-serif italic text-amber-400"
               style={{
                 background: 'rgba(201,168,76,0.06)',
                 border: '1px solid rgba(201,168,76,0.25)',
@@ -98,26 +98,26 @@ export default function FeedbackForm() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onSubmit={handleSubmit}
-              className="space-y-3"
+              className="space-y-2"
             >
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Bug, suggestion, or just a hello…"
-                rows={3}
+                rows={2}
                 maxLength={MAX_MESSAGE_CHARS}
                 disabled={status === 'submitting'}
                 spellCheck={false}
                 className={[
-                  'w-full px-4 py-3 rounded-xl resize-none',
+                  'w-full px-3 py-2 rounded-lg resize-none',
                   'bg-zinc-900/70 ring-1 ring-zinc-700/60',
                   'focus:outline-none focus:ring-amber-500/40 transition-all duration-200',
-                  'font-serif text-[1.0625rem] text-zinc-100 placeholder:text-zinc-600',
+                  'font-serif text-sm text-zinc-100 placeholder:text-zinc-600',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                 ].join(' ')}
               />
 
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                 <input
                   type="email"
                   value={email}
@@ -127,10 +127,10 @@ export default function FeedbackForm() {
                   autoComplete="email"
                   maxLength={200}
                   className={[
-                    'flex-1 min-w-0 px-4 py-2.5 rounded-xl',
+                    'flex-1 min-w-0 px-3 py-1.5 rounded-lg',
                     'bg-zinc-900/70 ring-1 ring-zinc-700/60',
                     'focus:outline-none focus:ring-amber-500/40 transition-all duration-200',
-                    'font-sans text-sm text-zinc-100 placeholder:text-zinc-600',
+                    'font-sans text-xs text-zinc-100 placeholder:text-zinc-600',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                   ].join(' ')}
                 />
@@ -139,8 +139,8 @@ export default function FeedbackForm() {
                   type="submit"
                   disabled={!canSubmit}
                   className={[
-                    'flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl shrink-0',
-                    'font-sans font-bold text-sm transition-all duration-150',
+                    'flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg shrink-0',
+                    'font-sans font-bold text-xs transition-all duration-150',
                     'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/25',
                     !canSubmit ? 'opacity-50 cursor-not-allowed' : '',
                   ].join(' ')}
@@ -174,7 +174,7 @@ export default function FeedbackForm() {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-950/40 border border-red-500/25 text-red-400 text-sm font-sans">
+                    <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-950/40 border border-red-500/25 text-red-400 text-xs font-sans">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mt-0.5 shrink-0">
                         <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                       </svg>
