@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import InputPanel from './components/InputPanel';
 import SentenceAnalysis, { type AnalysisResult } from './components/SentenceAnalysis';
 import About from './components/About';
+import FeedbackForm from './components/FeedbackForm';
 
 // ─── Loading messages ─────────────────────────────────────────────────────────
 
@@ -229,6 +230,9 @@ export default function App() {
           ) : null}
         </AnimatePresence>
       </div>
+
+      {/* ── Feedback ────────────────────────────────────────────── */}
+      <FeedbackForm />
 
       {/* ── About ───────────────────────────────────────────────── */}
       <About />
