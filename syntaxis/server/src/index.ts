@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import analyzeRouter from './routes/analyze';
+import feedbackRouter from './routes/feedback';
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,6 +21,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/analyze', analyzeRouter);
+app.use('/api/feedback', feedbackRouter);
 
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
