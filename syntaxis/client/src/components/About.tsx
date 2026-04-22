@@ -1,80 +1,128 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import posthog from 'posthog-js';
+import { motion } from 'framer-motion';
+import Nav from './Nav';
+import Footer from './Footer';
+import type { Route } from './routes';
 
-export default function About() {
-  const [open, setOpen] = useState(false);
+interface Props {
+  onNavigate: (route: Route) => void;
+}
 
-  const handleToggle = () => {
-    setOpen((v) => {
-      if (!v) posthog.capture('about_opened');
-      return !v;
-    });
-  };
-
+export default function About({ onNavigate }: Props) {
   return (
-    <div className="w-full flex flex-col items-center px-4 sm:px-6 pt-6 pb-12">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="min-h-screen"
+    >
+      <Nav currentRoute="about" onNavigate={onNavigate} />
 
-      {/* ── Trigger ────────────────────────────────────────────────── */}
-      <button
-        onClick={handleToggle}
-        className="flex items-center gap-1.5 text-[11px] font-sans uppercase tracking-[0.16em] text-zinc-600 hover:text-zinc-400 transition-colors duration-150 select-none"
-      >
-        About Syntaxis
-        <motion.span
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: 0.25, ease: 'easeInOut' }}
-          className="inline-block leading-none mt-px"
+      {/* ── Title ──────────────────────────────────────────────── */}
+      <div className="max-w-[640px] mx-auto px-6 sm:px-10 pt-16 sm:pt-[72px]">
+        <div
+          className="font-sans text-[11px] uppercase mb-4"
+          style={{ color: '#c9a84c', letterSpacing: '0.22em' }}
         >
-          ▾
-        </motion.span>
-      </button>
+          About
+        </div>
+        <h1
+          className="font-serif text-[34px] sm:text-[44px] font-medium m-0 leading-[1.15]"
+          style={{ color: '#eae3d4', letterSpacing: '-0.01em' }}
+        >
+          A tool for making sense
+          <br />
+          of the classics.
+        </h1>
+        <p
+          className="mt-4 font-serif italic text-base"
+          style={{ color: '#9a9284' }}
+        >
+          sententia clara fiat!
+        </p>
+      </div>
 
-      {/* ── Expandable content ─────────────────────────────────────── */}
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key="about-body"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden w-full flex justify-center"
+      {/* ── Body with gold left-border rule ─────────────────────── */}
+      <div className="max-w-[640px] mx-auto px-6 sm:px-10 pt-12 pb-10">
+        <div
+          className="py-2.5"
+          style={{
+            paddingLeft: '32px',
+            borderLeft: '3px solid rgba(201,168,76,0.45)',
+          }}
+        >
+          <p
+            className="font-serif text-[17px] leading-[1.75] mb-[26px] m-0"
+            style={{ color: '#eae3d4' }}
           >
-            <div
-              className="mt-6 w-full max-w-[736px] py-[23px] sm:py-[28px] pl-[23px] sm:pl-[32px] pr-[14px]"
-              style={{ borderLeft: '3.5px solid rgba(201,168,76,0.45)' }}
+            <span
+              className="float-left font-serif italic"
+              style={{
+                fontSize: '62px',
+                lineHeight: 0.92,
+                color: '#c9a84c',
+                paddingRight: '10px',
+                paddingTop: '6px',
+              }}
             >
+              T
+            </span>
+            ired of using clunky tools like Whitaker&rsquo;s Words to make sense of the classics?
+            Wish there was a better way to understand beautiful languages like Latin and Ancient
+            Greek, where tiny word endings make all the difference in translation?
+          </p>
 
-              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
-                Tired of using clunky tools like Whitaker's Words to try to make sense of the classics? Wish there was a
-                better way to understand beautiful classical languages like Latin and Ancient Greek, where
-                tiny word endings make all the difference in translation?
-              </p>
+          <p
+            className="font-serif text-[17px] leading-[1.75] mb-[26px]"
+            style={{ color: '#9a9284' }}
+          >
+            As a six-year student of the classics at Belmont Hill School, Brandon Li &rsquo;26
+            definitely was. So with the support of the BH classics department, he built Syntaxis —
+            a sleek, interactive tool for dissecting classical languages and connecting the dots,
+            so that studying the classics is <i>laetius</i> rather than <i>odiosius</i>, as it should be.
+          </p>
 
-              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
-                As a 6-year student of the classics at Belmont Hill School, Brandon Li '26 definitely was.
-                So with the support of the BH classics department, he built Syntaxis - a sleek, interactive tool for dissecting classical languages and
-                connecting the dots, so that studying the classics is <i>laetius</i> rather than <i>odiosius</i>, as it should be.
-                It runs every query through UChicago's Logeion for precise dictionary definitions, then
-                implements advanced AI to map out sentence architecture: nested clauses, prepositional phrases, case usages,
-                and an optional English translation, all beautifully color-coded and dynamically interactive.
-              </p>
+          <p
+            className="font-serif text-[17px] leading-[1.75] mb-[26px]"
+            style={{ color: '#9a9284' }}
+          >
+            Every query runs through UChicago&rsquo;s Logeion for precise dictionary definitions, then
+            advanced AI maps the sentence&rsquo;s architecture: nested clauses, prepositional phrases,
+            case usages, and an optional English translation — all beautifully color-coded and
+            dynamically interactive.
+          </p>
 
-              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
-                Whether learning Latin or Ancient Greek for the first time, translating passages for coursework, or simply
-                studying classical languages for the pure joy of it, Syntaxis provides a better way to make sense of the classics.
-              </p>
+          <p
+            className="font-serif text-[17px] leading-[1.75] m-0"
+            style={{ color: '#9a9284' }}
+          >
+            Whether learning for the first time, translating for coursework, or simply studying
+            for the pure joy of it, Syntaxis provides a better way to make sense of the classics.
+          </p>
+        </div>
 
-              <p className="font-serif text-[1.064rem] text-zinc-400 leading-[1.75] mb-[23px]">
-                <span className="text-zinc-400">Comments and Feedback: </span>
-                <a href="mailto:lllenterprises68@gmail.com" className="underline decoration-zinc-600 hover:text-zinc-400 transition-colors">lllenterprises68@gmail.com</a>
-              </p>
+        {/* Contact */}
+        <div
+          className="mt-14 pt-7 font-sans text-[13px]"
+          style={{
+            borderTop: '1px solid rgba(201,168,76,0.1)',
+            color: '#9a9284',
+          }}
+        >
+          Comments &amp; feedback:{' '}
+          <a
+            href="mailto:lllenterprises68@gmail.com"
+            style={{
+              color: '#c9a84c',
+              textDecoration: 'none',
+              borderBottom: '1px solid rgba(201,168,76,0.3)',
+            }}
+          >
+            lllenterprises68@gmail.com
+          </a>
+        </div>
+      </div>
 
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      <Footer onNavigate={onNavigate} />
+    </motion.div>
   );
 }

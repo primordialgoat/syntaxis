@@ -1,9 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
+import posthog from 'posthog-js';
 import InputPanel from './components/InputPanel';
 import SentenceAnalysis, { type AnalysisResult } from './components/SentenceAnalysis';
 import About from './components/About';
+import Feedback from './components/Feedback';
+import Nav from './components/Nav';
+import Footer from './components/Footer';
+import type { Route } from './components/routes';
 
 // ─── Loading messages ─────────────────────────────────────────────────────────
 
@@ -26,7 +31,6 @@ function QuillIcon() {
       animate={{ rotate: [-9, 9, -9] }}
       transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
     >
-      {/* Feather body */}
       <path
         d="M20.5 3.5C17 1 10 3.5 7 9C5 12.5 5 16 6.5 18.5L3.5 21.5"
         stroke="currentColor"
@@ -34,7 +38,6 @@ function QuillIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {/* Barbs / vane */}
       <path
         d="M6.5 18.5C9.5 17 13 14.5 16.5 9.5"
         stroke="currentColor"
@@ -42,7 +45,6 @@ function QuillIcon() {
         strokeLinecap="round"
         strokeDasharray="1.5 2.2"
       />
-      {/* Quill tip nib */}
       <path
         d="M3.5 21.5L6.5 18.5"
         stroke="currentColor"
@@ -144,9 +146,13 @@ function LoadingSkeleton() {
   );
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
+// ─── Landing page ─────────────────────────────────────────────────────────────
 
-export default function App() {
+interface LandingProps {
+  onNavigate: (route: Route) => void;
+}
+
+function Landing({ onNavigate }: LandingProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -191,47 +197,90 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* ── Input ───────────────────────────────────────────────── */}
-      <div className="w-full px-4 sm:px-6 flex flex-col items-center py-6 sm:py-8">
-        <InputPanel onSubmit={handleAnalyze} isLoading={isLoading} error={error} />
+    <>
+      <Nav currentRoute="landing" onNavigate={onNavigate} />
+
+      {/* ── Main content (grows to push footer down) ────────────── */}
+      <div className="flex-1">
+        {/* ── Input ─────────────────────────────────────────────── */}
+        <div className="w-full px-4 sm:px-6 flex flex-col items-center py-12 sm:py-16">
+          <InputPanel onSubmit={handleAnalyze} isLoading={isLoading} error={error} />
+        </div>
+
+        {/* ── Hairline divider ──────────────────────────────────── */}
+        <AnimatePresence>
+          {hasContent && (
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="h-px mx-auto max-w-2xl"
+              style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.2), transparent)' }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* ── Results ───────────────────────────────────────────── */}
+        <div ref={resultRef}>
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <LoadingSkeleton key="loading" />
+            ) : result ? (
+              <motion.div
+                key="result"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.45, ease: 'easeOut' }}
+              >
+                <SentenceAnalysis result={result} />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* ── Hairline divider ────────────────────────────────────── */}
-      <AnimatePresence>
-        {hasContent && (
+      <Footer onNavigate={onNavigate} />
+    </>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [route, setRoute] = useState<Route>('landing');
+
+  // Scroll to top on route change; capture about_opened for the new-route case.
+  const handleNavigate = (next: Route) => {
+    if (next === 'about' && route !== 'about') {
+      posthog.capture('about_opened');
+    }
+    setRoute(next);
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }));
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <AnimatePresence mode="wait">
+        {route === 'about' ? (
+          <About key="about" onNavigate={handleNavigate} />
+        ) : route === 'feedback' ? (
+          <Feedback key="feedback" onNavigate={handleNavigate} />
+        ) : (
           <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
+            key="landing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="h-px mx-auto max-w-2xl"
-            style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.2), transparent)' }}
-          />
+            transition={{ duration: 0.25 }}
+            className="flex-1 flex flex-col"
+          >
+            <Landing onNavigate={handleNavigate} />
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Results ─────────────────────────────────────────────── */}
-      <div ref={resultRef}>
-        <AnimatePresence mode="wait">
-          {isLoading ? (
-            <LoadingSkeleton key="loading" />
-          ) : result ? (
-            <motion.div
-              key="result"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.45, ease: 'easeOut' }}
-            >
-              <SentenceAnalysis result={result} />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
-
-      {/* ── About ───────────────────────────────────────────────── */}
-      <About />
       <Analytics />
     </div>
   );

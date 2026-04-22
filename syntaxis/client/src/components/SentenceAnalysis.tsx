@@ -549,6 +549,64 @@ function ClauseCard({
   );
 }
 
+// ─── ShareButton ──────────────────────────────────────────────────────────────
+
+function ShareButton({ result }: { result: AnalysisResult }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const text = `${result.original}\n\n"${result.fullTranslation}"\n\n— analyzed with Syntaxis`;
+    try {
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        try {
+          await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share({
+            title: 'Syntaxis analysis',
+            text,
+          });
+          posthog.capture('analysis_shared', { method: 'native_share' });
+          return;
+        } catch {
+          /* fall through to clipboard */
+        }
+      }
+      await navigator.clipboard.writeText(text);
+      posthog.capture('analysis_shared', { method: 'clipboard' });
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  return (
+    <button
+      onClick={handleShare}
+      className="flex items-center gap-1.5 py-1.5 px-3 rounded-full cursor-pointer font-sans text-xs font-medium transition-colors duration-150 bg-transparent"
+      style={{
+        color: copied ? '#e0b95a' : '#c9a84c',
+        border: '1px solid rgba(201,168,76,0.3)',
+        letterSpacing: '0.01em',
+      }}
+    >
+      {copied ? (
+        <>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 8.5l3.5 3.5L13 4.5" />
+          </svg>
+          Copied ✓
+        </>
+      ) : (
+        <>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+            <path d="M8 10V2M8 2L5 5M8 2l3 3M3 9v4a1 1 0 001 1h8a1 1 0 001-1V9" />
+          </svg>
+          Share this analysis
+        </>
+      )}
+    </button>
+  );
+}
+
 // ─── SentenceAnalysis ─────────────────────────────────────────────────────────
 
 interface Props {
@@ -583,12 +641,26 @@ export default function SentenceAnalysis({ result }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-center mb-8 sm:mb-10"
+        className="relative text-center mb-8 sm:mb-10"
       >
+        <div
+          className="font-sans text-[10.5px] uppercase mb-3"
+          style={{ color: '#6e6558', letterSpacing: '0.22em' }}
+        >
+          Analyzing
+        </div>
         <p className="font-serif text-xl sm:text-2xl text-zinc-100 tracking-wide leading-relaxed">
           {result.original}
         </p>
-        <div className="mt-3 h-px w-20 mx-auto bg-zinc-700/60" />
+        <div className="mt-3 h-px w-20 mx-auto" style={{ background: 'rgba(201,168,76,0.3)' }} />
+
+        {/* Share button — absolute top-right on sm+, stacked below on mobile */}
+        <div className="hidden sm:block absolute top-0 right-0">
+          <ShareButton result={result} />
+        </div>
+        <div className="sm:hidden flex justify-center mt-4">
+          <ShareButton result={result} />
+        </div>
       </motion.div>
 
       {/* ── Clause cards ─────────────────────────────────────── */}
