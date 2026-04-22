@@ -84,7 +84,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         className="font-sans text-[13px] text-center mb-6"
         style={{ color: '#9a9284', letterSpacing: '0.01em' }}
       >
-        Latin and Ancient Greek sentence flow analyzer
+        The free online Latin and Ancient Greek sentence-flow analyzer
       </p>
 
       {/* ── Search bar + form ───────────────────────────────────── */}
