@@ -32,7 +32,7 @@ export default function Footer({ onNavigate }: Props) {
         style={{ background: '#c9a84c', opacity: 0.55, transform: 'rotate(45deg)' }}
       />
 
-      <div className="flex gap-5 items-center">
+      <div className="flex flex-wrap gap-x-5 gap-y-2 items-center justify-center">
         <button
           onClick={() => onNavigate('about')}
           className={`${linkBase} hover:text-zinc-200`}

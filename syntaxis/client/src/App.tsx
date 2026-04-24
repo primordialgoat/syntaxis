@@ -165,23 +165,50 @@ function Landing({ onNavigate }: LandingProps) {
     setError(null);
 
     try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sentence }),
-      });
+      let res: Response;
+      try {
+        res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sentence }),
+        });
+      } catch {
+        // Network-level failure (offline, DNS, connection refused).
+        throw new Error('Could not reach the analysis server. Check your connection and try again.');
+      }
 
-      const data: unknown = await res.json();
+      // Read the body as text first, then try to parse. Avoids the
+      // cryptic "Unexpected end of JSON input" when the response has
+      // no body (e.g. proxy error, 502, or the backend is down).
+      const rawBody = await res.text();
+      let data: unknown = null;
+      if (rawBody) {
+        try {
+          data = JSON.parse(rawBody);
+        } catch {
+          // Non-JSON payload — leave data as null, handled below.
+        }
+      }
 
       if (!res.ok) {
-        const msg =
+        const serverMsg =
           typeof data === 'object' &&
           data !== null &&
           'error' in data &&
           typeof (data as { error: unknown }).error === 'string'
             ? (data as { error: string }).error
-            : `Server error ${res.status}`;
-        throw new Error(msg);
+            : null;
+        const fallback =
+          res.status >= 500
+            ? `The server ran into a problem (${res.status}). Please try again in a moment.`
+            : res.status === 0
+              ? 'Could not reach the analysis server. Check your connection and try again.'
+              : `Request failed (${res.status}).`;
+        throw new Error(serverMsg ?? fallback);
+      }
+
+      if (data === null) {
+        throw new Error('The analysis server returned an empty response. Please try again.');
       }
 
       setResult(data as AnalysisResult);
