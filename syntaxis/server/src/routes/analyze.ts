@@ -42,8 +42,8 @@ The JSON must follow this exact structure:
       "groups": [
         {
           "id": "group_1",
-          "type": "prepositional_phrase" | "noun_phrase" | "verb_phrase" | "participial_phrase" | "indirect_discourse" | "relative_clause",
-          "label": "e.g. 'Prepositional Phrase: in foro'",
+          "type": "prepositional_phrase" | "noun_phrase" | "verb_phrase" | "participial_phrase" | "ablative_absolute" | "indirect_discourse" | "relative_clause",
+          "label": "e.g. 'Prepositional Phrase: in foro' or 'Ablative Absolute: urbe capta'",
           "wordIds": ["word_1", "word_2"]
         }
       ],
@@ -60,7 +60,15 @@ Rules:
 - Only include morphology fields that are applicable to the part of speech
 - relatedWords may be an empty array if there are no relations
 - groups may be an empty array if no meaningful groupings exist
-- Ensure all wordIds in groups reference valid word ids within the same clause`;
+- Ensure all wordIds in groups reference valid word ids within the same clause
+- An "ablative_absolute" group is an ablative noun (or pronoun) plus one of: (a) an ablative participle agreeing with it, e.g. "navibus iunctis", "urbe capta", "his rebus gestis"; or (b) an ablative noun or adjective standing in predicate relation to it, with no participle (because esse has no present participle), e.g. "Cicerone consule" (Cicero being consul), "me invito" (against my will), "vivo Caesare" (Caesar being alive).
+- Use "ablative_absolute" only when the head ablative noun has NO syntactic role in the main clause — it is "absolute" (loosed) from the main-clause syntax. Specifically: it is not the object of a preposition, not an ablative of means/manner/agent modifying the main verb, and not modifying a noun that has a role in the main clause.
+- Disambiguation:
+  • "Urbe capta, Caesar discessit" → ablative_absolute (urbe has no main-clause role).
+  • "Caesar urbem captam vidit" → participial_phrase modifying urbem (urbem IS the direct object of the main verb).
+  • "Pugnat magnis viribus" → not ablative_absolute (ablative of means governed by pugnat).
+  • "Magna celeritate venit" → not ablative_absolute (ablative of manner; one ablative noun + adjective in a manner phrase).
+- The label string for an ablative absolute should begin with "Ablative Absolute:" followed by the Latin words, e.g. "Ablative Absolute: navibus iunctis".`;
 
 router.post('/', async (req: Request, res: Response) => {
   const { sentence } = req.body as { sentence?: string };
