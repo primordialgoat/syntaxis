@@ -91,15 +91,16 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         transition={{ duration: 0.45, delay: 0.22 }}
         onSubmit={handleSubmit}
       >
-        {/* ── Single-line search bar ────────────────────────────── */}
+        {/* ── Single-line search bar ──────────────────────────────
+             Default border + focus ring are cream-tinted, not gold. */}
         <div
           className={[
             'flex items-stretch h-[68px] rounded-2xl transition-all duration-200',
             error
               ? 'ring-1 ring-red-500/50'
-              : 'focus-within:ring-1 focus-within:ring-amber-500/40',
+              : 'focus-within:ring-1 focus-within:ring-[rgba(232,227,212,0.35)]',
             'ring-1',
-            error ? 'ring-red-500/40' : 'ring-zinc-700/60',
+            error ? 'ring-red-500/40' : 'ring-[rgba(255,255,255,0.08)]',
             'bg-zinc-900/70',
           ].join(' ')}
         >
@@ -134,7 +135,10 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
               className={[
                 'flex items-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl',
                 'font-sans font-bold text-xs sm:text-base transition-all duration-150',
-                'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/25',
+                // Cream-fill primary action — replaces the gold button. Reads
+                // as "primary" by being the brightest thing on the page rather
+                // than by being yellow.
+                'bg-cream hover:bg-cream-hover hover:-translate-y-px text-[#1a1610]',
                 !canSubmit ? 'cursor-not-allowed' : '',
               ].join(' ')}
             >

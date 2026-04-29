@@ -52,7 +52,7 @@ export default function Footer({ onNavigate }: Props) {
         <button
           onClick={handleContact}
           className={linkBase}
-          style={{ color: copied ? '#c9a84c' : '#9a9284' }}
+          style={{ color: copied ? '#d4d0c8' : '#9a9284' }}
         >
           {copied ? 'Email copied ✓' : 'Contact'}
         </button>
