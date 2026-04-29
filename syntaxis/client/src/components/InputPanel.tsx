@@ -59,7 +59,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
   return (
     <div className="w-full max-w-[760px] mx-auto">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-6">
         <motion.h1
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -69,23 +69,20 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         >
           Syntaxis
         </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.55, delay: 0.18 }}
-          className="mt-3 font-serif italic text-zinc-500 text-sm tracking-widest"
-        >
-          sententia clara fiat!
-        </motion.p>
       </div>
 
-      {/* ── Functional descriptor ──────────────────────────────── */}
-      <p
-        className="font-sans text-[14px] text-center mb-6"
-        style={{ color: '#eae3d4', letterSpacing: '0.01em' }}
+      {/* ── Subtagline (Fraunces italic, cream — replaces the
+           old gold-tinted descriptor and the "sententia clara fiat!"
+           Latin tagline, which now lives in the footer as a quiet motto). */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.55, delay: 0.15 }}
+        className="font-fraunces italic text-center mb-10"
+        style={{ fontSize: '18px', color: '#d4d0c8' }}
       >
-        The free digital classical language sentence flow analyzer. Enter a sentence in Latin or Ancient Greek and press analyze!
-      </p>
+        Read Latin and Greek the way your teacher marks it.
+      </motion.p>
 
       {/* ── Search bar + form ───────────────────────────────────── */}
       <motion.form

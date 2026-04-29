@@ -58,8 +58,17 @@ export default function Footer({ onNavigate }: Props) {
         </button>
       </div>
 
+      {/* Motto — moved here from under the wordmark so it reads as a
+           steady mark rather than an enthusiastic page-level tagline. */}
       <div
-        className="mt-5 font-serif italic text-[11px]"
+        className="mt-5 font-fraunces italic"
+        style={{ fontSize: '12px', color: '#6a6660' }}
+      >
+        sententia clara fiat
+      </div>
+
+      <div
+        className="mt-2 font-serif italic text-[11px]"
         style={{ color: '#6e6558', letterSpacing: '0.04em' }}
       >
         © MMXXVI · Syntaxis
