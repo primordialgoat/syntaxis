@@ -132,7 +132,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
               type="submit"
               disabled={!canSubmit}
               className={[
-                'flex items-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl',
+                'flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-1.5 rounded-lg sm:rounded-xl',
                 'font-sans font-bold text-xs sm:text-base transition-all duration-150',
                 // Cream-fill primary action — replaces the gold button. Reads
                 // as "primary" by being the brightest thing on the page rather
