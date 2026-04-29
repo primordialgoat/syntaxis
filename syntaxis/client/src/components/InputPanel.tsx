@@ -71,9 +71,8 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         </motion.h1>
       </div>
 
-      {/* ── Subtagline (Fraunces italic, cream — replaces the
-           old gold-tinted descriptor and the "sententia clara fiat!"
-           Latin tagline, which now lives in the footer as a quiet motto). */}
+      {/* ── Subtagline (Fraunces italic, cream). Same styling as
+           before — only the copy changed. */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -81,7 +80,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         className="font-fraunces italic text-center mb-10"
         style={{ fontSize: '18px', color: '#d4d0c8' }}
       >
-        Read Latin and Greek the way your teacher marks it.
+        A free sentence flow analyzer for Latin and Ancient Greek.
       </motion.p>
 
       {/* ── Search bar + form ───────────────────────────────────── */}
