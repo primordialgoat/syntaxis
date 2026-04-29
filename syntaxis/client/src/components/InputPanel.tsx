@@ -108,7 +108,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
             type="text"
             value={sentence}
             onChange={(e) => setSentence(e.target.value)}
-            placeholder="sententiam inscribe…"
+            placeholder="Sententiam inscribe…"
             disabled={isLoading}
             spellCheck={false}
             autoComplete="off"
