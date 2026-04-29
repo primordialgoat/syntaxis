@@ -9,6 +9,13 @@ import Feedback from './components/Feedback';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import type { Route } from './components/routes';
+import preloadedAnalysisJson from './data/preloaded-analysis.json';
+
+// Captured once via /api/analyze on the canonical example. Lives in /data
+// so the landing page can render a real, fully-analyzed sentence on first
+// paint with zero network call and zero loading state.
+const PRELOADED_ANALYSIS = preloadedAnalysisJson as AnalysisResult;
+const PRELOADED_SESSION_KEY = 'syntaxis:preloaded-seen';
 
 // ─── Loading messages ─────────────────────────────────────────────────────────
 
@@ -155,12 +162,34 @@ interface LandingProps {
 function Landing({ onNavigate }: LandingProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  // Result starts populated with the canonical Caesar analysis so visitors
+  // see a fully-rendered example on first paint instead of an empty input.
+  const [result, setResult] = useState<AnalysisResult | null>(PRELOADED_ANALYSIS);
+  // Tracks whether `result` is still the preloaded example. Flips to false
+  // once the user submits their own sentence, which hides the small
+  // "— Caesar, De Bello Gallico" attribution.
+  const [isPreloaded, setIsPreloaded] = useState(true);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // Fire once-per-session analytics for the preloaded analysis impression.
+  // sessionStorage gates re-fires across route transitions and HMR.
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem(PRELOADED_SESSION_KEY)) {
+        posthog.capture('preloaded_analysis_seen');
+        sessionStorage.setItem(PRELOADED_SESSION_KEY, '1');
+      }
+    } catch {
+      /* sessionStorage may be unavailable in private mode — ignore */
+    }
+  }, []);
 
   const hasContent = isLoading || result !== null;
 
   const handleAnalyze = async (sentence: string) => {
+    // Once the user submits their own sentence the preloaded example is
+    // replaced; the attribution label disappears with it.
+    setIsPreloaded(false);
     setIsLoading(true);
     setError(null);
 
@@ -256,11 +285,26 @@ function Landing({ onNavigate }: LandingProps) {
             ) : result ? (
               <motion.div
                 key="result"
-                initial={{ opacity: 0, y: 16 }}
+                // Skip the fade-in only on first paint with the preloaded
+                // example so the page renders complete, no flash. Real
+                // submissions still get the gentle reveal.
+                initial={isPreloaded ? false : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.45, ease: 'easeOut' }}
               >
+                {isPreloaded && (
+                  <div
+                    className="text-center font-fraunces italic mx-auto"
+                    style={{
+                      fontSize: '13px',
+                      color: '#8A8680',
+                      paddingTop: '24px',
+                    }}
+                  >
+                    — Caesar, <i>De Bello Gallico</i>
+                  </div>
+                )}
                 <SentenceAnalysis result={result} />
               </motion.div>
             ) : null}
