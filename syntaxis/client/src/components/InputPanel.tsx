@@ -116,7 +116,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
             spellCheck={false}
             autoComplete="off"
             className={[
-              'flex-1 min-w-0 h-full pl-5 sm:pl-7 pr-3 bg-transparent',
+              'flex-1 min-w-0 h-full pl-4 sm:pl-7 pr-2 sm:pr-3 bg-transparent',
               'font-serif text-base sm:text-[1.125rem] text-zinc-100',
               'placeholder:text-zinc-600 focus:outline-none',
               'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -126,14 +126,17 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
           {/* Vertical rule */}
           <div className="w-px my-[14px] bg-zinc-700/60 shrink-0" />
 
-          {/* Right col: button (top) + counter (bottom) */}
-          <div className="flex flex-col items-end justify-between py-[10px] pl-3 pr-3 shrink-0 w-[130px] sm:w-[150px]">
+          {/* Right col: button (top) + counter (bottom)
+               Mobile: button is vertically centered; counter pins to the bottom-right so
+                       it doesn't drag the button off-center.
+               Desktop: original behavior — button top, counter bottom via justify-between. */}
+          <div className="relative flex flex-col items-end justify-center sm:justify-between py-[10px] pl-2 sm:pl-3 pr-2 sm:pr-3 shrink-0 w-[104px] sm:w-[150px]">
             <button
               type="submit"
               disabled={!canSubmit}
               className={[
-                'flex items-center gap-1.5 px-5 py-2 rounded-xl',
-                'font-sans font-bold text-base transition-all duration-150',
+                'flex items-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-2 rounded-lg sm:rounded-xl',
+                'font-sans font-bold text-xs sm:text-base transition-all duration-150',
                 'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/25',
                 !canSubmit ? 'cursor-not-allowed' : '',
               ].join(' ')}
@@ -152,14 +155,20 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
                   <span className="hidden sm:inline">Wait…</span>
                 </>
               ) : (
-                'Analyze →'
+                <>
+                  <span>Analyze</span>
+                  <span className="hidden sm:inline">→</span>
+                </>
               )}
             </button>
 
-            {/* Char counter — invisible when empty to preserve layout */}
+            {/* Char counter — invisible when empty to preserve layout.
+                 Absolute on mobile (so it doesn't shift button off-center),
+                 static on desktop (so justify-between can do its thing). */}
             <span
               className={[
-                'text-[10px] font-sans tabular-nums transition-colors duration-150 leading-none',
+                'text-[9px] sm:text-[10px] font-sans tabular-nums transition-colors duration-150 leading-none',
+                'absolute bottom-[8px] right-[10px] sm:static',
                 charCount === 0 ? 'invisible' : counterColor,
               ].join(' ')}
             >
@@ -202,12 +211,13 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
                 'border border-zinc-800 bg-zinc-900/40 font-sans',
                 'hover:border-zinc-600 hover:bg-zinc-800/60',
                 'transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed',
+                'max-w-full',
               ].join(' ')}
             >
-              <span className="font-serif italic text-zinc-400 group-hover:text-zinc-200 transition-colors">
+              <span className="font-serif italic text-zinc-400 group-hover:text-zinc-200 transition-colors min-w-0 truncate">
                 {ex.text.replace(/\.$/, '')}
               </span>
-              <span className="text-zinc-600 group-hover:text-zinc-500 transition-colors font-sans not-italic">
+              <span className="text-zinc-600 group-hover:text-zinc-500 transition-colors font-sans not-italic shrink-0">
                 — {ex.author}
               </span>
             </button>
