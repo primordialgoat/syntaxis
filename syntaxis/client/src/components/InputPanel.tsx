@@ -80,7 +80,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         className="font-fraunces italic text-center mb-10"
         style={{ fontSize: '18px', color: '#d4d0c8' }}
       >
-        A free sentence flow analyzer for Latin and Ancient Greek.
+        A free sentence flow analyzer for Latin and Ancient Greek
       </motion.p>
 
       {/* ── Search bar + form ───────────────────────────────────── */}
