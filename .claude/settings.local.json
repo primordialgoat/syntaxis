@@ -7,17 +7,10 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "WebFetch(domain:api.anthropic.com)",
-      "Bash(gunzip -c \"/c/Users/potat/.claude/projects/C--Users-potat-OneDrive-Desktop-claude-vibecode/01b436f4-0d98-4623-af89-e4231b488630/tool-results/webfetch-1776699276680-gf8bzq.bin\")",
-      "Read(//tmp/**)",
-      "Bash(gunzip -c \"C:/Users/potat/.claude/projects/C--Users-potat-OneDrive-Desktop-claude-vibecode/01b436f4-0d98-4623-af89-e4231b488630/tool-results/webfetch-1776699276680-gf8bzq.bin\")",
-      "Bash(tar -x --to-stdout syntaxis/chats/chat1.md)",
-      "Bash(tar -x --to-stdout syntaxis/project/Syntaxis.html)",
-      "WebFetch(domain:claude.ai)",
-      "Bash(cp \"C:/Users/potat/.claude/projects/C--Users-potat-OneDrive-Desktop-claude-vibecode/01b436f4-0d98-4623-af89-e4231b488630/tool-results/webfetch-1776819478067-73merb.bin\" /tmp/design_bundle/bundle.gz)",
-      "Bash(gunzip -f bundle.gz)",
-      "Bash(mkdir -p extracted)",
-      "Bash(tar -xf bundle -C extracted)"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(netstat -ano)",
+      "Bash(curl -sS -X POST http://localhost:3001/api/health)",
+      "Bash(curl -sS -X POST http://localhost:3001/api/analyze -H 'Content-Type: application/json' -d '{\"sentence\":\"Gallia est omnis divisa in partes tres.\"}' -w \"\\\\n[HTTP %{http_code}]\")"
     ]
   }
 }
