@@ -5,10 +5,10 @@ import posthog from 'posthog-js';
 const MAX_CHARS = 500;
 
 const EXAMPLES = [
-  { text: 'Gallia est omnis divisa in partes tres...', author: 'Caesar' },
-  { text: 'Arma virumque cano, Troiae qui primus ab oris...', author: 'Vergil' },
+  { text: 'Gallia est omnis divisa in partes tres', author: 'Caesar' },
+  { text: 'Arma virumque cano, Troiae qui primus ab oris', author: 'Vergil' },
   { text: 'Quo usque tandem abutere, Catilina, patientia nostra?', author: 'Cicero' },
-  { text: 'Dum Romae consulitur, Saguntum expugnatur!', author: 'Livy' },
+  { text: 'Dum Romae consulitur, Saguntum expugnatur', author: 'Livy' },
 ] as const;
 
 interface Props {
@@ -199,17 +199,16 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
           )}
         </AnimatePresence>
 
-        {/* ── Try another — inline middot list ──────────────────────
-             Replaces the old 2×2 italic chip grid. One centered line,
-             muted secondary "Try another:" prefix, four cream author
-             names separated by middots. Hovering an author shows the
-             full Latin sentence as a native tooltip; clicking re-runs
-             the analyzer in place via handleExample. */}
+        {/* ── Try an example — inline middot list ──────────────────
+             Centered line: muted secondary "Try an example:" prefix,
+             four cream author names separated by middots. Hovering an
+             author shows the full Latin sentence as a native tooltip;
+             clicking re-runs the analyzer in place via handleExample. */}
         <p
           className="text-center mt-6 font-sans"
           style={{ fontSize: '13px', color: '#8A8680', lineHeight: 1.7 }}
         >
-          Try another:{' '}
+          Try an example:{' '}
           {EXAMPLES.map((ex, i) => (
             <span key={ex.author}>
               {i > 0 && (
