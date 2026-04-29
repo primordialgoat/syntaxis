@@ -64,31 +64,30 @@ export default function About({ onNavigate }: Props) {
                 paddingTop: '6px',
               }}
             >
-              T
+              S
             </span>
-            ired of using clunky tools like Whitaker&rsquo;s Words to make sense of the classics?
-            Wish there was a better way to understand beautiful languages like Latin and Ancient
-            Greek, where tiny word endings make all the difference in translation?
+            yntaxis was built by a team of longtime Latin and Ancient Greek students who believed that
+            learning ancient languages shouldn't rely on equally ancient tools.
           </p>
 
           <p
             className="font-serif text-[17px] leading-[1.75] mb-[26px]"
             style={{ color: '#9a9284' }}
           >
-            As a six-year student of the classics at Belmont Hill School, Brandon Li &rsquo;26
-            definitely was. So with the support of the BH classics department, he built Syntaxis —
-            a sleek, interactive tool for dissecting classical languages and connecting the dots,
-            so that studying the classics is <i>laetius</i> rather than <i>odiosius</i>, as it should be.
+            Existing tools like Whitaker's Words and Perseus provide individual word definitions,
+            but are unable to offer any insight into how sentences flow and how words relate to each other.
+            Conversely, modern LLMs like Claude and ChatGPT translate full passages in seconds, but don&rsquo;t
+            retrace their steps to show how words and clauses fit into the broader sentence architecture.
+            In learning highly-inflected languages like Latin and Ancient Greek, that sentence flow is the whole game.
           </p>
 
           <p
             className="font-serif text-[17px] leading-[1.75] mb-[26px]"
             style={{ color: '#9a9284' }}
           >
-            Every query runs through UChicago&rsquo;s Logeion for precise dictionary definitions, then
-            advanced AI maps the sentence&rsquo;s architecture: nested clauses, prepositional phrases,
-            case usages, and an optional English translation — all beautifully color-coded and
-            dynamically interactive.
+            So we built Syntaxis, a modern translation tool for the modern classics community. It first runs every query
+            through UChicago&rsquo;s Logeion for precise dictionary definitions, then marks up sentences interactively like a
+            digital <i>magister</i>, displaying case usages, syntax, nested clauses, and prepositional phrases.
           </p>
 
           <p
@@ -96,8 +95,7 @@ export default function About({ onNavigate }: Props) {
             style={{ color: '#9a9284' }}
           >
             Whether learning for the first time, translating for coursework, or simply studying
-            for the pure joy of it, Syntaxis provides a better way to make sense of the classics.
-          </p>
+            for the pure joy of it, we hope Syntaxis helps you make better sense of the classics. Happy translating!</p>
         </div>
 
         {/* Contact */}
