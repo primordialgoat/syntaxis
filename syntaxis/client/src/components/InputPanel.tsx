@@ -199,31 +199,43 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
           )}
         </AnimatePresence>
 
-        {/* ── Example chips ─────────────────────────────────────── */}
-        <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex.text}
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleExample(ex.text, ex.author)}
-              className={[
-                'group flex items-center gap-1.5 pl-3 pr-2.5 py-1 rounded-full text-xs',
-                'border border-zinc-800 bg-zinc-900/40 font-sans',
-                'hover:border-zinc-600 hover:bg-zinc-800/60',
-                'transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed',
-                'max-w-full',
-              ].join(' ')}
-            >
-              <span className="font-serif italic text-zinc-400 group-hover:text-zinc-200 transition-colors min-w-0 truncate">
-                {ex.text.replace(/\.$/, '')}
-              </span>
-              <span className="text-zinc-600 group-hover:text-zinc-500 transition-colors font-sans not-italic shrink-0">
-                — {ex.author}
-              </span>
-            </button>
+        {/* ── Try another — inline middot list ──────────────────────
+             Replaces the old 2×2 italic chip grid. One centered line,
+             muted secondary "Try another:" prefix, four cream author
+             names separated by middots. Hovering an author shows the
+             full Latin sentence as a native tooltip; clicking re-runs
+             the analyzer in place via handleExample. */}
+        <p
+          className="text-center mt-6 font-sans"
+          style={{ fontSize: '13px', color: '#8A8680', lineHeight: 1.7 }}
+        >
+          Try another:{' '}
+          {EXAMPLES.map((ex, i) => (
+            <span key={ex.author}>
+              {i > 0 && (
+                <span className="mx-2.5" style={{ color: '#6a6660' }} aria-hidden="true">
+                  ·
+                </span>
+              )}
+              <button
+                type="button"
+                title={ex.text}
+                onClick={() => handleExample(ex.text, ex.author)}
+                disabled={isLoading}
+                className="font-sans bg-transparent border-0 p-0 cursor-pointer transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ fontSize: '13px', color: '#d4d0c8' }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) e.currentTarget.style.color = '#f0ebdc';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#d4d0c8';
+                }}
+              >
+                {ex.author}
+              </button>
+            </span>
           ))}
-        </div>
+        </p>
       </motion.form>
     </div>
   );
