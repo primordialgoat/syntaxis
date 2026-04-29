@@ -237,23 +237,6 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
           ))}
         </p>
       </motion.form>
-
-      {/* ── "What this is" strip — three editorial facts, middots ── */}
-      <p
-        className="font-sans text-center mx-auto my-6"
-        style={{
-          fontSize: '13px',
-          maxWidth: '720px',
-          color: '#8A8680',
-          lineHeight: 1.7,
-        }}
-      >
-        Glosses every word with definitions from UChicago&rsquo;s Logeion
-        <span className="mx-2.5" style={{ color: '#6a6660' }} aria-hidden="true">·</span>
-        Identifies clauses, cases, and syntactic roles
-        <span className="mx-2.5" style={{ color: '#6a6660' }} aria-hidden="true">·</span>
-        Optional English translation, one click away
-      </p>
     </div>
   );
 }
