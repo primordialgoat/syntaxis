@@ -134,10 +134,8 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
               className={[
                 'flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-1.5 rounded-lg sm:rounded-xl',
                 'font-sans font-bold text-xs sm:text-base transition-all duration-150',
-                // Cream-fill primary action — replaces the gold button. Reads
-                // as "primary" by being the brightest thing on the page rather
-                // than by being yellow.
-                'bg-cream hover:bg-cream-hover hover:-translate-y-px text-[#1a1610]',
+                // Gold primary action — matches the Syntaxis wordmark (amber-400).
+                'bg-amber-400 hover:bg-amber-300 hover:-translate-y-px text-[#1a1610]',
                 !canSubmit ? 'cursor-not-allowed' : '',
               ].join(' ')}
             >
