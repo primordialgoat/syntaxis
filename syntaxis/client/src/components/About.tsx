@@ -72,7 +72,7 @@ export default function About({ onNavigate }: Props) {
 
           <p
             className="font-serif text-[17px] leading-[1.75] mb-[26px]"
-            style={{ color: '#9a9284' }}
+            style={{ color: '#eae3d4' }}
           >
             Existing tools like Whitaker's Words and Perseus provide individual word definitions,
             but are unable to offer any insight into how sentences flow and how words relate to each other.
@@ -83,7 +83,7 @@ export default function About({ onNavigate }: Props) {
 
           <p
             className="font-serif text-[17px] leading-[1.75] mb-[26px]"
-            style={{ color: '#9a9284' }}
+            style={{ color: '#eae3d4' }}
           >
             So we built Syntaxis, a modern translation tool for the modern classics community. It first runs every query
             through UChicago&rsquo;s Logeion for precise dictionary definitions, then marks up sentences interactively like a
@@ -92,7 +92,7 @@ export default function About({ onNavigate }: Props) {
 
           <p
             className="font-serif text-[17px] leading-[1.75] m-0"
-            style={{ color: '#9a9284' }}
+            style={{ color: '#eae3d4' }}
           >
             Whether learning for the first time, translating for coursework, or simply studying
             for the pure joy of it, we hope Syntaxis helps you make better sense of the classics. Happy translating!</p>

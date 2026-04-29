@@ -81,10 +81,10 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
 
       {/* ── Functional descriptor ──────────────────────────────── */}
       <p
-        className="font-sans text-[13px] text-center mb-6"
-        style={{ color: '#9a9284', letterSpacing: '0.01em' }}
+        className="font-sans text-[18px] text-center mb-6"
+        style={{ color: '#eae3d4', letterSpacing: '0.01em' }}
       >
-        The free online Latin and Ancient Greek sentence-flow analyzer
+        The free digital classical language sentence flow analyzer. Enter a sentence in Latin or Ancient Greek and press analyze!
       </p>
 
       {/* ── Search bar + form ───────────────────────────────────── */}
