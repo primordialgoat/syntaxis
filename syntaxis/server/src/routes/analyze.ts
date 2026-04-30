@@ -14,6 +14,7 @@ The JSON must follow this exact structure:
   "clauses": [
     {
       "id": "clause_1",
+      "parentId": "id of the clause that syntactically contains this one (omit or null for the main clause)",
       "type": "main" | "subordinate" | "indirect_discourse" | "relative" | "participial",
       "level": 0,
       "label": "human readable label e.g. 'Main Clause', 'Purpose Clause (ut)', 'Indirect Statement'",
@@ -54,8 +55,18 @@ The JSON must follow this exact structure:
 }
 
 Rules:
-- level 0 = main clause, 1 = first-level subordinate, 2 = nested subordinate
+- Emit clauses in the array in linear sentence order — sorted by the position of each clause's earliest word in the original Latin sentence. The clause whose first word appears leftmost in the Latin comes first in the array; the next, second; and so on.
+- "level" is the depth of this clause in the syntactic tree. The single main clause is level 0. Any clause syntactically embedded inside another clause has level = parent.level + 1, where the parent is the clause whose verb governs this one. Specifically:
+  • A subordinate clause (cum, ut, si, quod, quia, dum, postquam, etc.) attached to a verb in clause X is at level X.level + 1.
+  • A relative clause modifying a noun in clause X is at level X.level + 1.
+  • An indirect statement (accusative + infinitive) functioning as subject or object of a verb in clause X is at level X.level + 1.
+  • An indirect question (interrogative word + subjunctive) embedded as object or complement of a verb in clause X is at level X.level + 1.
+  • A substantive clause (ut / ne / quod) functioning as subject, object, or complement of a verb in clause X is at level X.level + 1.
+  Embedding chains compound: an indirect statement inside a cum-clause inside the main clause is level 2, not level 1.
+- "parentId" is the id of the clause that syntactically contains this one — the clause whose verb governs this clause's verb, or whose noun this clause modifies. The single main clause has no parent — omit parentId or set it to null. Every non-main clause must have a parentId pointing to an existing clause id in the same response. parentId and level must be consistent: a clause's level equals its parent's level + 1.
+- Worked example for "Caesari cum id nuntiatum esset, eos … conari, maturat …": the array order is [Cum Clause (level 1, parentId = main_clause_id), Indirect Statement (level 2, parentId = cum_clause_id), Main Clause (level 0, no parentId)]. Linear sentence order; levels reflect the embedding chain (the indirect statement is the subject of "nuntiatum esset", which lives in the cum-clause, so it's a child of the cum-clause and one level deeper).
 - Assign every word in the sentence to exactly one clause
+- A word belongs to the clause whose verb (or other governing element) it depends on syntactically, regardless of where it sits in the sentence's surface order. In particular, a dative noun governed by a verb in clause X belongs to clause X — including the dative of indirect object, dative of reference (the judging or perceiving party), and sympathetic dative. A dative may sit at the very start of the sentence (left-of-clause hyperbaton) and still belong to whichever clause governs it. Example: in "Caesari cum id nuntiatum esset…", "Caesari" is the dative indirect object of "nuntiatum esset" and therefore belongs to the cum-clause, not the main clause, even though it appears before "cum".
 - Word and clause ids must be unique across the whole response (e.g. word_1 through word_N globally)
 - Only include morphology fields that are applicable to the part of speech
 - relatedWords may be an empty array if there are no relations

@@ -43,6 +43,7 @@ interface Group {
 
 interface Clause {
   id: string;
+  parentId?: string;
   type: ClauseType;
   level: number;
   label: string;
@@ -607,6 +608,65 @@ function ShareButton({ result }: { result: AnalysisResult }) {
   );
 }
 
+// ─── Clause ordering ──────────────────────────────────────────────────────────
+
+// Earliest word index for a clause, derived from the numeric suffix of word ids
+// (the prompt emits word_1, word_2, … in linear sentence order). Used to sort
+// siblings so cards render in the same order their words appear in the Latin.
+function firstWordPosition(clause: Clause): number {
+  let min = Infinity;
+  for (const w of clause.words) {
+    const m = w.id.match(/\d+/);
+    if (m) {
+      const n = parseInt(m[0], 10);
+      if (n < min) min = n;
+    }
+  }
+  return min === Infinity ? 0 : min;
+}
+
+// Build a parent → children tree from the flat clauses array, sort siblings by
+// first-word position, and DFS-flatten so children render immediately after
+// their parent. Defends against orphans (parentId points nowhere) and cycles.
+function orderClausesForRendering(clauses: Clause[]): Clause[] {
+  const idSet = new Set(clauses.map((c) => c.id));
+  const childrenByParent = new Map<string, Clause[]>();
+  const topLevel: Clause[] = [];
+
+  for (const clause of clauses) {
+    const parentId = clause.parentId;
+    if (parentId && idSet.has(parentId)) {
+      const arr = childrenByParent.get(parentId) ?? [];
+      arr.push(clause);
+      childrenByParent.set(parentId, arr);
+    } else {
+      // No parentId, or parentId points to a non-existent clause: treat as top-level.
+      topLevel.push(clause);
+    }
+  }
+
+  const sortByPos = (a: Clause, b: Clause) =>
+    firstWordPosition(a) - firstWordPosition(b);
+  topLevel.sort(sortByPos);
+  for (const arr of childrenByParent.values()) arr.sort(sortByPos);
+
+  const ordered: Clause[] = [];
+  const visited = new Set<string>();
+  function visit(clause: Clause) {
+    if (visited.has(clause.id)) return;
+    visited.add(clause.id);
+    ordered.push(clause);
+    for (const child of childrenByParent.get(clause.id) ?? []) visit(child);
+  }
+  for (const c of topLevel) visit(c);
+
+  // Catch any clauses that were unreachable from top-level (e.g. a parentId
+  // cycle that dropped them). Append them so nothing is silently lost.
+  for (const c of clauses) if (!visited.has(c.id)) ordered.push(c);
+
+  return ordered;
+}
+
 // ─── SentenceAnalysis ─────────────────────────────────────────────────────────
 
 interface Props {
@@ -632,6 +692,8 @@ export default function SentenceAnalysis({ result }: Props) {
       wordMap.set(word.id, word);
     }
   }
+
+  const orderedClauses = orderClausesForRendering(result.clauses);
 
   return (
     <div className="max-w-[900px] mx-auto px-3 sm:px-6 py-8 sm:py-12">
@@ -665,7 +727,7 @@ export default function SentenceAnalysis({ result }: Props) {
 
       {/* ── Clause cards ─────────────────────────────────────── */}
       <div>
-        {result.clauses.map((clause, i) => (
+        {orderedClauses.map((clause, i) => (
           <ClauseCard
             key={clause.id}
             clause={clause}
