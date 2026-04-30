@@ -24,7 +24,7 @@ The JSON must follow this exact structure:
           "id": "word_1",
           "text": "original Latin word as it appears",
           "lemma": "dictionary form",
-          "role": "subject" | "verb" | "direct_object" | "indirect_object" | "modifier" | "preposition" | "conjunction" | "predicate_nominative" | "predicate_adjective" | "vocative" | "other",
+          "role": "subject" | "verb" | "direct_object" | "indirect_object" | "adj" | "adv" | "preposition" | "conjunction" | "predicate_nominative" | "predicate_adjective" | "vocative" | "other",
           "partOfSpeech": "noun" | "verb" | "adjective" | "adverb" | "preposition" | "conjunction" | "pronoun" | "participle" | "infinitive" | "interjection",
           "morphology": {
             "case": "nominative|genitive|dative|accusative|ablative|vocative|locative (for nouns, pronouns, adjectives, participles)",
@@ -68,6 +68,8 @@ Rules:
 - Worked example for "Caesari cum id nuntiatum esset, eos … conari, maturat …": the array order is [Cum Clause (level 1, parentId = main_clause_id), Indirect Statement (level 2, parentId = cum_clause_id), Main Clause (level 0, no parentId)]. Linear sentence order; levels reflect the embedding chain (the indirect statement is the subject of "nuntiatum esset", which lives in the cum-clause, so it's a child of the cum-clause and one level deeper).
 - Assign every word in the sentence to exactly one clause
 - A word belongs to the clause whose verb (or other governing element) it depends on syntactically, regardless of where it sits in the sentence's surface order. In particular, a dative noun governed by a verb in clause X belongs to clause X — including the dative of indirect object, dative of reference (the judging or perceiving party), and sympathetic dative. A dative may sit at the very start of the sentence (left-of-clause hyperbaton) and still belong to whichever clause governs it. Example: in "Caesari cum id nuntiatum esset…", "Caesari" is the dative indirect object of "nuntiatum esset" and therefore belongs to the cum-clause, not the main clause, even though it appears before "cum".
+- Use "adj" for words that modify a noun (or pronoun) by case/number/gender agreement: adjectives proper (e.g. "magnus", "bonus"), demonstratives in attributive use (e.g. "hic", "ille"), possessive adjectives (e.g. "meus", "noster"), numerals in agreement (e.g. "tres", "multi"), and attributive participles (e.g. "amantem" in "puerum amantem"). Do NOT use "adj" for predicate adjectives — those keep "predicate_adjective". Do NOT use "adj" for nouns in the genitive case that modify another noun (e.g. "Caesaris" in "domus Caesaris") — those are nouns and remain "other" in this revision.
+- Use "adv" for words that modify a verb, adjective, or another adverb without morphological agreement: true adverbs (e.g. "celeriter", "bene", "saepe", "semper", "numquam"), intensifiers (e.g. "valde", "multum", "paene"), and negation particles (e.g. "non", "nec", "ne", "haud"). Do NOT use "adv" for nouns in the ablative or accusative case that function adverbially (e.g. ablative of means "magnis itineribus", accusative of duration "tres horas") — those are nouns and remain "other" in this revision.
 - Word and clause ids must be unique across the whole response (e.g. word_1 through word_N globally)
 - Only include morphology fields that are applicable to the part of speech
 - relatedWords may be an empty array if there are no relations
