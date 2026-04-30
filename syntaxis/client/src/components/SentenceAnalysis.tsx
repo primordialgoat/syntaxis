@@ -29,7 +29,7 @@ interface Word {
   lemma: string;
   role: string;
   partOfSpeech: string;
-  morphology: Morphology;
+  morphology?: Morphology;
   translation: string;
   relatedWords: string[];
 }
@@ -43,7 +43,7 @@ interface Group {
 
 interface Clause {
   id: string;
-  parentId?: string;
+  parentId?: string | null;
   type: ClauseType;
   level: number;
   label: string;
@@ -142,7 +142,7 @@ function useIsMobile() {
 // ─── WordTooltip ──────────────────────────────────────────────────────────────
 
 function WordTooltip({ word }: { word: Word }) {
-  const m = word.morphology;
+  const m = word.morphology ?? {};
 
   const morphRows: [string, string][] = (
     [

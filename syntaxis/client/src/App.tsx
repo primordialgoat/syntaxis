@@ -9,6 +9,7 @@ import Feedback from './components/Feedback';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import type { Route } from './components/routes';
+import { getPreloadedExample } from './data/preloadedExamples';
 
 // ─── Loading messages ─────────────────────────────────────────────────────────
 
@@ -249,6 +250,22 @@ function Landing({ onNavigate }: LandingProps) {
   const hasContent = isLoading || result !== null;
 
   const handleAnalyze = async (sentence: string) => {
+    // Pre-computed analyses for the four landing-page example chips render
+    // instantly with no API call, no skeleton, no streaming wait. The card
+    // mount animations still play, so visually it looks identical to a normal
+    // analysis — just no perceptible loading delay.
+    const preloaded = getPreloadedExample(sentence);
+    if (preloaded) {
+      setError(null);
+      setIsLoading(false);
+      setIsStreaming(false);
+      setResult(preloaded);
+      requestAnimationFrame(() => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return;
+    }
+
     setIsLoading(true);
     setIsStreaming(true);
     setError(null);
