@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
+import { createHash } from 'node:crypto';
 
 const MAX_SENTENCE_LENGTH = 500;
 
@@ -79,7 +80,42 @@ Rules:
   • "Magna celeritate venit" → not ablative_absolute (ablative of manner; one ablative noun + adjective in a manner phrase).
 - The label string for an ablative absolute should begin with "Ablative Absolute:" followed by the Latin words, e.g. "Ablative Absolute: navibus iunctis".`;
 
+// ─── Cache (in-memory LRU keyed by prompt hash + sentence hash) ──────────────
+//
+// Lives for the lifetime of the function instance. Vercel recycles serverless
+// instances after some idle time, so cold starts wipe the cache; within an
+// instance's life, repeat traffic (esp. the four landing-page example chips
+// and any sentence a user re-submits) returns instantly. PROMPT_HASH is baked
+// in at module load so any prompt edit auto-invalidates the entire cache.
+
+const PROMPT_HASH = createHash('sha256').update(SYSTEM_PROMPT).digest('hex').slice(0, 8);
+const CACHE_MAX = 500;
+const cache = new Map<string, unknown>();
+
+function cacheKey(sentence: string): string {
+  return `${PROMPT_HASH}:${createHash('sha256').update(sentence).digest('hex')}`;
+}
+
+function cacheGet(key: string): unknown | undefined {
+  const value = cache.get(key);
+  if (value === undefined) return undefined;
+  // LRU touch: re-insert so this key moves to the most-recent end.
+  cache.delete(key);
+  cache.set(key, value);
+  return value;
+}
+
+function cacheSet(key: string, value: unknown): void {
+  if (cache.size >= CACHE_MAX) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey !== undefined) cache.delete(oldestKey);
+  }
+  cache.set(key, value);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const t0 = Date.now();
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -103,48 +139,116 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  const trimmedSentence = sentence.trim();
+  const key = cacheKey(trimmedSentence);
+  const cached = cacheGet(key);
+
+  if (cached !== undefined) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.write(JSON.stringify(cached));
+    res.end();
+    const t3 = Date.now();
+    console.log(JSON.stringify({
+      type: 'analyze_timing',
+      cache_status: 'hit',
+      sentence_chars: trimmedSentence.length,
+      sentence_words: trimmedSentence.split(/\s+/).length,
+      validation_ms: 0,
+      ttfb_ms: 0,
+      llm_ms: 0,
+      parse_ms: 0,
+      total_ms: t3 - t0,
+      prompt_tokens: null,
+      completion_tokens: null,
+      total_tokens: null,
+      model: 'cache',
+    }));
+    return;
+  }
+
   const client = new OpenAI({ apiKey, timeout: 30_000 });
 
   try {
-    const completion = await client.chat.completions.create({
+    const t1 = Date.now();
+    const stream = await client.chat.completions.create({
       model: 'gpt-4o',
       temperature: 0,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: sentence.trim() },
+        { role: 'user', content: trimmedSentence },
       ],
+      stream: true,
+      stream_options: { include_usage: true },
     });
 
-    const raw = completion.choices[0]?.message?.content;
-    if (!raw) {
-      res.status(502).json({ error: 'OpenAI returned an empty response.' });
-      return;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+    let accumulated = '';
+    let firstChunkAt = 0;
+    let usage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | null = null;
+    let chunkModel: string | null = null;
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta?.content ?? '';
+      if (delta) {
+        if (firstChunkAt === 0) firstChunkAt = Date.now();
+        accumulated += delta;
+        res.write(delta);
+      }
+      if (chunk.usage) usage = chunk.usage;
+      if (chunk.model && !chunkModel) chunkModel = chunk.model;
     }
 
-    let parsed: unknown;
+    res.end();
+    const t2 = Date.now();
+
+    let parsed: unknown = null;
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(accumulated);
     } catch {
-      res.status(502).json({
-        error: 'The grammarians are debating this one — try rephrasing or check for typos.',
-        code: 'malformed_response',
-      });
-      return;
+      // Stream already finished; can't change response. Don't cache.
     }
 
-    res.json(parsed);
+    if (parsed !== null) cacheSet(key, parsed);
+
+    const t3 = Date.now();
+    console.log(JSON.stringify({
+      type: 'analyze_timing',
+      cache_status: 'miss',
+      sentence_chars: trimmedSentence.length,
+      sentence_words: trimmedSentence.split(/\s+/).length,
+      validation_ms: t1 - t0,
+      ttfb_ms: firstChunkAt > 0 ? firstChunkAt - t1 : null,
+      llm_ms: t2 - t1,
+      parse_ms: t3 - t2,
+      total_ms: t3 - t0,
+      prompt_tokens: usage?.prompt_tokens ?? null,
+      completion_tokens: usage?.completion_tokens ?? null,
+      total_tokens: usage?.total_tokens ?? null,
+      model: chunkModel ?? 'gpt-4o',
+      parse_ok: parsed !== null,
+    }));
   } catch (err) {
-    if (err instanceof OpenAI.APIError) {
-      const status = err.status ?? 502;
-      res.status(status >= 400 && status < 600 ? status : 502).json({
-        error: `OpenAI API error: ${err.message}`,
-        code: err.code,
-      });
+    if (!res.headersSent) {
+      if (err instanceof OpenAI.APIError) {
+        const status = err.status ?? 502;
+        res.status(status >= 400 && status < 600 ? status : 502).json({
+          error: `OpenAI API error: ${err.message}`,
+          code: err.code,
+        });
+        return;
+      }
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      res.status(500).json({ error: `Internal server error: ${message}` });
       return;
     }
-
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    res.status(500).json({ error: `Internal server error: ${message}` });
+    // Mid-stream error: response headers already committed. Close gracefully
+    // and log so we can spot it in production.
+    try { res.end(); } catch { /* ignore */ }
+    console.error(JSON.stringify({
+      type: 'analyze_stream_error',
+      message: err instanceof Error ? err.message : 'Unknown error',
+    }));
   }
 }

@@ -393,7 +393,6 @@ function TranslationCopyButton({ text }: { text: string }) {
 
 interface ClauseCardProps {
   clause: Clause;
-  index: number;
   hoveredWordId: string | null;
   setHoveredWordId: (id: string | null) => void;
   wordMap: Map<string, Word>;
@@ -403,7 +402,6 @@ interface ClauseCardProps {
 
 function ClauseCard({
   clause,
-  index,
   hoveredWordId,
   setHoveredWordId,
   wordMap,
@@ -414,11 +412,16 @@ function ClauseCard({
   const cs = CLAUSE_STYLES[clause.type] ?? CLAUSE_STYLES.subordinate;
   const indent = clause.level * (isMobile ? 12 : 36);
 
+  // Streaming partials may emit a clause before its words/groups arrive.
+  // Default to empty arrays so the renderer never crashes mid-stream.
+  const clauseWords = clause.words ?? [];
+  const clauseGroups = clause.groups ?? [];
+
   // Word → group maps
   const wordToGroupIdx = new Map<string, number>();
   const wordToGroupId  = new Map<string, string>();
-  clause.groups.forEach((group, i) => {
-    group.wordIds.forEach((wid) => {
+  clauseGroups.forEach((group, i) => {
+    (group.wordIds ?? []).forEach((wid) => {
       wordToGroupIdx.set(wid, i % GROUP_PALETTE.length);
       wordToGroupId.set(wid, group.id);
     });
@@ -456,9 +459,9 @@ function ClauseCard({
 
       {/* ── Card ───────────────────────────────────────────────── */}
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: index * 0.07, ease: 'easeOut' }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         style={{
           marginLeft: `${indent}px`,
           // Subtle colored border on all sides, thick colored left accent
@@ -482,7 +485,7 @@ function ClauseCard({
 
         {/* Word tokens */}
         <div className="flex flex-wrap gap-3 sm:gap-4 items-start">
-          {clause.words.map((word) => {
+          {clauseWords.map((word) => {
             const gIdx = wordToGroupIdx.get(word.id);
             const gId  = wordToGroupId.get(word.id);
             return (
@@ -501,9 +504,9 @@ function ClauseCard({
         </div>
 
         {/* Group labels */}
-        {clause.groups.length > 0 && (
+        {clauseGroups.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
-            {clause.groups.map((group, i) => {
+            {clauseGroups.map((group, i) => {
               const palette  = GROUP_PALETTE[i % GROUP_PALETTE.length];
               const isActive = hoveredGroupId === group.id;
               return (
@@ -667,16 +670,60 @@ function orderClausesForRendering(clauses: Clause[]): Clause[] {
   return ordered;
 }
 
+// ─── StreamingIndicator ───────────────────────────────────────────────────────
+//
+// Shown beneath the rendered cards while the analysis stream is still arriving,
+// so the user knows more cards are on the way. Three pulsing gold dots + an
+// italic message in the same serif/amber palette as the loading skeleton.
+
+function StreamingIndicator() {
+  return (
+    <div className="flex items-center justify-center gap-3 my-8">
+      <div className="flex gap-1.5">
+        {[0, 0.18, 0.36].map((delay, i) => (
+          <motion.div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: '#c9a84c' }}
+            animate={{ opacity: [0.25, 1, 0.25] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut', delay }}
+          />
+        ))}
+      </div>
+      <p
+        className="font-serif italic text-sm"
+        style={{ color: '#a89070' }}
+      >
+        Analyzing the rest of the sentence…
+      </p>
+    </div>
+  );
+}
+
 // ─── SentenceAnalysis ─────────────────────────────────────────────────────────
 
 interface Props {
   result: AnalysisResult;
+  isStreaming?: boolean;
 }
 
-export default function SentenceAnalysis({ result }: Props) {
+export default function SentenceAnalysis({ result, isStreaming = false }: Props) {
   const isMobile = useIsMobile();
   const [hoveredWordId, setHoveredWordId] = useState<string | null>(null);
   const [showTranslation, toggleTranslation] = useShowTranslation();
+
+  // Defer mounting the streaming indicator by 400ms so that fast paths (cache
+  // hits, ~100ms) don't show a brief flicker of "Analyzing the rest…" before
+  // the stream finishes.
+  const [showStreamingIndicator, setShowStreamingIndicator] = useState(false);
+  useEffect(() => {
+    if (!isStreaming) {
+      setShowStreamingIndicator(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setShowStreamingIndicator(true), 400);
+    return () => window.clearTimeout(timer);
+  }, [isStreaming]);
 
   const handleToggleTranslation = useCallback(() => {
     posthog.capture('translation_toggled', {
@@ -685,15 +732,17 @@ export default function SentenceAnalysis({ result }: Props) {
     toggleTranslation();
   }, [showTranslation, toggleTranslation]);
 
-  // Global word map across all clauses (for related-word highlighting)
+  // Global word map across all clauses (for related-word highlighting).
+  // Streaming partials may not have populated all clauses/words yet — guard.
+  const clauses = result.clauses ?? [];
   const wordMap = new Map<string, Word>();
-  for (const clause of result.clauses) {
-    for (const word of clause.words) {
+  for (const clause of clauses) {
+    for (const word of clause.words ?? []) {
       wordMap.set(word.id, word);
     }
   }
 
-  const orderedClauses = orderClausesForRendering(result.clauses);
+  const orderedClauses = orderClausesForRendering(clauses);
 
   return (
     <div className="max-w-[900px] mx-auto px-3 sm:px-6 py-8 sm:py-12">
@@ -727,11 +776,10 @@ export default function SentenceAnalysis({ result }: Props) {
 
       {/* ── Clause cards ─────────────────────────────────────── */}
       <div>
-        {orderedClauses.map((clause, i) => (
+        {orderedClauses.map((clause) => (
           <ClauseCard
             key={clause.id}
             clause={clause}
-            index={i}
             hoveredWordId={hoveredWordId}
             setHoveredWordId={setHoveredWordId}
             wordMap={wordMap}
@@ -741,20 +789,41 @@ export default function SentenceAnalysis({ result }: Props) {
         ))}
       </div>
 
-      {/* ── Translation divider toggle ────────────────────────── */}
-      <TranslationDivider show={showTranslation} onToggle={handleToggleTranslation} />
-
-      {/* ── English translation bar ───────────────────────────── */}
-      <AnimatePresence>
-        {showTranslation && (
+      {/* ── Streaming indicator (shown while more cards are still arriving)
+             cross-fades with the translation section below ──────────── */}
+      <AnimatePresence mode="wait">
+        {showStreamingIndicator ? (
           <motion.div
-            key="full-tr"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="relative flex overflow-hidden rounded-2xl border border-zinc-700/30 bg-zinc-900/50 mb-10"
+            key="streaming"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
           >
+            <StreamingIndicator />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="post-stream"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            {/* Translation divider toggle */}
+            <TranslationDivider show={showTranslation} onToggle={handleToggleTranslation} />
+
+            {/* English translation bar — only render when fullTranslation is present */}
+            <AnimatePresence>
+              {showTranslation && result.fullTranslation && (
+                <motion.div
+                  key="full-tr"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="relative flex overflow-hidden rounded-2xl border border-zinc-700/30 bg-zinc-900/50 mb-10"
+                >
             {/* Thick amber left accent */}
             <div className="w-[5px] shrink-0 bg-amber-500" />
             <div className="px-5 sm:px-8 py-5 sm:py-6 flex-1">
@@ -766,6 +835,9 @@ export default function SentenceAnalysis({ result }: Props) {
               </p>
             </div>
             <TranslationCopyButton text={result.fullTranslation} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>

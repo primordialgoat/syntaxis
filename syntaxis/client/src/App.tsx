@@ -146,6 +146,93 @@ function LoadingSkeleton() {
   );
 }
 
+// ─── Partial JSON parser (for streaming progressive render) ───────────────────
+//
+// The /api/analyze response is a JSON object streamed token-by-token from the
+// model. To render clauses as they arrive we attempt to parse the accumulated
+// buffer after every chunk: strict parse first; on failure, walk to the last
+// well-formed closing brace, truncate, close any unmatched open structures,
+// and try again. This guarantees the partial result never has half-formed
+// clauses inside the clauses array — only fully-emitted ones.
+
+function tryParsePartial(text: string): unknown {
+  try { return JSON.parse(text); } catch { /* fall through */ }
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  let lastSafePos = -1;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\') { escape = true; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === '{' || c === '[') depth++;
+    else if (c === '}' || c === ']') {
+      depth--;
+      if (depth >= 0) lastSafePos = i;
+    }
+  }
+
+  if (lastSafePos === -1) return null;
+
+  let safe = text.slice(0, lastSafePos + 1);
+  const stack: string[] = [];
+  let s = false;
+  let e = false;
+  for (let i = 0; i < safe.length; i++) {
+    const c = safe[i];
+    if (e) { e = false; continue; }
+    if (c === '\\') { e = true; continue; }
+    if (c === '"') { s = !s; continue; }
+    if (s) continue;
+    if (c === '{' || c === '[') stack.push(c);
+    else if (c === '}' || c === ']') stack.pop();
+  }
+
+  safe = safe.replace(/,\s*$/, '');
+  while (stack.length > 0) {
+    const open = stack.pop()!;
+    safe += open === '{' ? '}' : ']';
+  }
+
+  try { return JSON.parse(safe); } catch { return null; }
+}
+
+function isRenderablePartial(value: unknown): value is AnalysisResult {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as { clauses?: unknown };
+  return Array.isArray(v.clauses) && v.clauses.length > 0;
+}
+
+// Count how many clause objects have been fully closed in the streamed JSON.
+// A clause object lives at depth 3 (root `{` = 1, `clauses` `[` = 2, clause
+// `{` = 3), so its closing `}` brings depth back to 2. We use this so the UI
+// only swaps in a card once its clause is *completely* emitted by the model
+// — rendering happens card-by-card, not word-by-word.
+function countCompleteClauses(text: string): number {
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  let count = 0;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\') { escape = true; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === '{' || c === '[') depth++;
+    else if (c === '}' || c === ']') {
+      depth--;
+      if (c === '}' && depth === 2) count++;
+    }
+  }
+  return count;
+}
+
 // ─── Landing page ─────────────────────────────────────────────────────────────
 
 interface LandingProps {
@@ -154,6 +241,7 @@ interface LandingProps {
 
 function Landing({ onNavigate }: LandingProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -162,6 +250,7 @@ function Landing({ onNavigate }: LandingProps) {
 
   const handleAnalyze = async (sentence: string) => {
     setIsLoading(true);
+    setIsStreaming(true);
     setError(null);
 
     try {
@@ -173,30 +262,23 @@ function Landing({ onNavigate }: LandingProps) {
           body: JSON.stringify({ sentence }),
         });
       } catch {
-        // Network-level failure (offline, DNS, connection refused).
         throw new Error('Could not reach the analysis server. Check your connection and try again.');
       }
 
-      // Read the body as text first, then try to parse. Avoids the
-      // cryptic "Unexpected end of JSON input" when the response has
-      // no body (e.g. proxy error, 502, or the backend is down).
-      const rawBody = await res.text();
-      let data: unknown = null;
-      if (rawBody) {
-        try {
-          data = JSON.parse(rawBody);
-        } catch {
-          // Non-JSON payload — leave data as null, handled below.
-        }
-      }
-
+      // Error responses are non-streamed JSON: read all then parse for the
+      // server's error message (or fall back to a status-based message).
       if (!res.ok) {
+        const errorBody = await res.text();
+        let errorData: unknown = null;
+        if (errorBody) {
+          try { errorData = JSON.parse(errorBody); } catch { /* ignore */ }
+        }
         const serverMsg =
-          typeof data === 'object' &&
-          data !== null &&
-          'error' in data &&
-          typeof (data as { error: unknown }).error === 'string'
-            ? (data as { error: string }).error
+          typeof errorData === 'object' &&
+          errorData !== null &&
+          'error' in errorData &&
+          typeof (errorData as { error: unknown }).error === 'string'
+            ? (errorData as { error: string }).error
             : null;
         const fallback =
           res.status >= 500
@@ -207,19 +289,71 @@ function Landing({ onNavigate }: LandingProps) {
         throw new Error(serverMsg ?? fallback);
       }
 
-      if (data === null) {
+      if (!res.body) {
         throw new Error('The analysis server returned an empty response. Please try again.');
       }
 
-      setResult(data as AnalysisResult);
+      // Stream the body. We only swap state when a NEW clause has been fully
+      // emitted by the model — `countCompleteClauses` walks the buffer and
+      // counts clause-level `}` closes. This makes cards appear card-by-card
+      // (each fading in on mount via Framer Motion) instead of word-by-word
+      // as tokens arrive inside an in-progress clause.
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = '';
+      let lastCompleteCount = 0;
+      let firstRender = false;
+      let scrolled = false;
 
-      requestAnimationFrame(() => {
-        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        accumulated += decoder.decode(value, { stream: true });
+
+        const completeCount = countCompleteClauses(accumulated);
+        if (completeCount > lastCompleteCount) {
+          const partial = tryParsePartial(accumulated);
+          if (isRenderablePartial(partial)) {
+            const truncated: AnalysisResult = {
+              ...partial,
+              clauses: partial.clauses.slice(0, completeCount),
+            };
+            if (!firstRender) {
+              setIsLoading(false);
+              firstRender = true;
+            }
+            setResult(truncated);
+            lastCompleteCount = completeCount;
+            if (!scrolled) {
+              scrolled = true;
+              requestAnimationFrame(() => {
+                resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              });
+            }
+          }
+        }
+      }
+      accumulated += decoder.decode();
+
+      // Final strict parse to ensure the complete payload is in state.
+      if (accumulated) {
+        try {
+          const final = JSON.parse(accumulated);
+          setResult(final as AnalysisResult);
+        } catch {
+          if (!firstRender) {
+            throw new Error('The analysis server returned an unparseable response. Please try again.');
+          }
+          // Keep the latest renderable partial we already showed.
+        }
+      } else if (!firstRender) {
+        throw new Error('The analysis server returned an empty response. Please try again.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
     }
   };
 
@@ -261,7 +395,7 @@ function Landing({ onNavigate }: LandingProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.45, ease: 'easeOut' }}
               >
-                <SentenceAnalysis result={result} />
+                <SentenceAnalysis result={result} isStreaming={isStreaming} />
               </motion.div>
             ) : null}
           </AnimatePresence>
