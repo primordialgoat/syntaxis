@@ -94,7 +94,7 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             "id": "word_6",
             "text": "partes",
             "lemma": "pars",
-            "role": "other",
+            "role": "object_of_preposition",
             "partOfSpeech": "noun",
             "morphology": {
               "case": "accusative",
@@ -218,7 +218,7 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
               "case": "ablative",
               "number": "singular",
               "gender": "feminine",
-              "caseUsage": "Ablative of Separation"
+              "caseUsage": "Ablative of Place From Which"
             },
             "translation": "from Troy",
             "relatedWords": []
@@ -232,7 +232,8 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             "morphology": {
               "case": "nominative",
               "number": "singular",
-              "gender": "masculine"
+              "gender": "masculine",
+              "caseUsage": "Subject"
             },
             "translation": "who",
             "relatedWords": []
@@ -267,16 +268,18 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             "id": "word_8",
             "text": "oris",
             "lemma": "ora",
-            "role": "other",
+            "role": "object_of_preposition",
             "partOfSpeech": "noun",
             "morphology": {
               "case": "ablative",
               "number": "plural",
               "gender": "feminine",
-              "caseUsage": "Ablative of Separation"
+              "caseUsage": "Object of Preposition"
             },
             "translation": "shores",
-            "relatedWords": []
+            "relatedWords": [
+              "word_7"
+            ]
           }
         ],
         "groups": [
@@ -346,8 +349,7 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             },
             "translation": "will you abuse",
             "relatedWords": [
-              "word_7",
-              "word_8"
+              "word_7"
             ]
           },
           {
@@ -368,7 +370,7 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             "id": "word_6",
             "text": "patientia",
             "lemma": "patientia",
-            "role": "direct_object",
+            "role": "other",
             "partOfSpeech": "noun",
             "morphology": {
               "case": "ablative",
@@ -378,7 +380,7 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             },
             "translation": "patience",
             "relatedWords": [
-              "word_8"
+              "word_4"
             ]
           },
           {
@@ -399,17 +401,7 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             ]
           }
         ],
-        "groups": [
-          {
-            "id": "group_1",
-            "type": "noun_phrase",
-            "label": "Noun Phrase: patientia nostra",
-            "wordIds": [
-              "word_6",
-              "word_7"
-            ]
-          }
-        ],
+        "groups": [],
         "translation": "To what extent, finally, will you abuse our patience, Catiline?"
       }
     ],
@@ -456,10 +448,10 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             "role": "verb",
             "partOfSpeech": "verb",
             "morphology": {
-              "person": "3rd",
               "tense": "present",
               "mood": "indicative",
-              "voice": "passive"
+              "voice": "passive",
+              "person": "3rd"
             },
             "translation": "it is deliberated",
             "relatedWords": []
@@ -497,10 +489,10 @@ export const PRELOADED_EXAMPLES: Record<string, AnalysisResult> = {
             "role": "verb",
             "partOfSpeech": "verb",
             "morphology": {
-              "person": "3rd",
               "tense": "present",
               "mood": "indicative",
-              "voice": "passive"
+              "voice": "passive",
+              "person": "3rd"
             },
             "translation": "is being besieged",
             "relatedWords": []

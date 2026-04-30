@@ -83,6 +83,7 @@ const ROLE_STYLES: Record<
   adj:                  { text: 'text-purple-300',  bg: 'bg-purple-300/10',  color: '#d8b4fe', label: 'Adjectival',        short: 'adj.'         },
   adv:                  { text: 'text-violet-300',  bg: 'bg-violet-300/10',  color: '#c4b5fd', label: 'Adverbial',         short: 'adv.'         },
   preposition:          { text: 'text-gray-400',    bg: 'bg-gray-400/10',    color: '#9ca3af', label: 'Preposition',       short: 'prep.'        },
+  object_of_preposition:{ text: 'text-sky-300',     bg: 'bg-sky-300/10',     color: '#7dd3fc', label: 'Object of Prep.',   short: 'prep. obj.'   },
   conjunction:          { text: 'text-gray-500',    bg: 'bg-gray-500/10',    color: '#6b7280', label: 'Conjunction',       short: 'conj.'        },
   predicate_nominative: { text: 'text-orange-300',  bg: 'bg-orange-300/10',  color: '#fdba74', label: 'Pred. Nominative',  short: 'pred. nom.'   },
   predicate_adjective:  { text: 'text-orange-200',  bg: 'bg-orange-200/10',  color: '#fed7aa', label: 'Pred. Adjective',   short: 'pred. adj.'   },
