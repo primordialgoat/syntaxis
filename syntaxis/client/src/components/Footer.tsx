@@ -64,7 +64,7 @@ export default function Footer({ onNavigate }: Props) {
         className="mt-5 font-fraunces italic"
         style={{ fontSize: '12px', color: '#6a6660' }}
       >
-        sententia clara fiat
+        sententia clara fiat · ἡ φράσις δηλωθήτω
       </div>
 
       <div

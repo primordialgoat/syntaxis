@@ -10,6 +10,7 @@ import Nav from './components/Nav';
 import Footer from './components/Footer';
 import type { Route } from './components/routes';
 import { getPreloadedExample } from './data/preloadedExamples';
+import { useLanguage } from './contexts/LanguageContext';
 
 // ─── Loading messages ─────────────────────────────────────────────────────────
 
@@ -241,20 +242,27 @@ interface LandingProps {
 }
 
 function Landing({ onNavigate }: LandingProps) {
+  const { language } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
+  // Clear results when language switches
+  useEffect(() => {
+    setResult(null);
+    setError(null);
+    setIsLoading(false);
+    setIsStreaming(false);
+  }, [language]);
+
   const hasContent = isLoading || result !== null;
 
   const handleAnalyze = async (sentence: string) => {
-    // Pre-computed analyses for the four landing-page example chips render
-    // instantly with no API call, no skeleton, no streaming wait. The card
-    // mount animations still play, so visually it looks identical to a normal
-    // analysis — just no perceptible loading delay.
-    const preloaded = getPreloadedExample(sentence);
+    // Pre-computed analyses for the Latin landing-page example chips render
+    // instantly with no API call. Greek examples always go through the API.
+    const preloaded = language === 'latin' ? getPreloadedExample(sentence) : null;
     if (preloaded) {
       setError(null);
       setIsLoading(false);
@@ -276,7 +284,7 @@ function Landing({ onNavigate }: LandingProps) {
         res = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sentence }),
+          body: JSON.stringify({ sentence, language }),
         });
       } catch {
         throw new Error('Could not reach the analysis server. Check your connection and try again.');
@@ -382,7 +390,7 @@ function Landing({ onNavigate }: LandingProps) {
       <div className="flex-1">
         {/* ── Input ─────────────────────────────────────────────── */}
         <div className="w-full px-4 sm:px-6 flex flex-col items-center py-12 sm:py-16">
-          <InputPanel onSubmit={handleAnalyze} isLoading={isLoading} error={error} />
+          <InputPanel key={language} onSubmit={handleAnalyze} isLoading={isLoading} error={error} />
         </div>
 
         {/* ── Hairline divider ──────────────────────────────────── */}
@@ -428,6 +436,11 @@ function Landing({ onNavigate }: LandingProps) {
 
 export default function App() {
   const [route, setRoute] = useState<Route>('landing');
+  const { language } = useLanguage();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-lang', language);
+  }, [language]);
 
   // Scroll to top on route change; capture about_opened for the new-route case.
   const handleNavigate = (next: Route) => {

@@ -8,8 +8,10 @@ type ClauseType =
   | 'main'
   | 'subordinate'
   | 'indirect_discourse'
+  | 'indirect_statement'
   | 'relative'
-  | 'participial';
+  | 'participial'
+  | 'genitive_absolute';
 
 interface Morphology {
   case?: string;
@@ -18,6 +20,7 @@ interface Morphology {
   caseUsage?: string;
   person?: string;
   tense?: string;
+  aspect?: string;
   mood?: string;
   voice?: string;
   modifies?: string;
@@ -64,11 +67,13 @@ const CLAUSE_STYLES: Record<
   ClauseType,
   { bg: string; badge: string; dot: string; lineColor: string }
 > = {
-  main:               { bg: 'bg-blue-950/25',   badge: 'bg-blue-500/15 text-blue-300 border border-blue-500/30',   dot: 'bg-blue-400',   lineColor: '#3b82f6' },
-  subordinate:        { bg: 'bg-purple-950/25',  badge: 'bg-purple-500/15 text-purple-300 border border-purple-500/30', dot: 'bg-purple-400', lineColor: '#a855f7' },
-  indirect_discourse: { bg: 'bg-amber-950/25',   badge: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',   dot: 'bg-amber-400',  lineColor: '#f59e0b' },
-  relative:           { bg: 'bg-green-950/25',   badge: 'bg-green-500/15 text-green-300 border border-green-500/30',   dot: 'bg-green-400',  lineColor: '#22c55e' },
-  participial:        { bg: 'bg-rose-950/25',    badge: 'bg-rose-500/15 text-rose-300 border border-rose-500/30',     dot: 'bg-rose-400',   lineColor: '#f43f5e' },
+  main:               { bg: 'bg-blue-950/25',     badge: 'bg-blue-500/15 text-blue-300 border border-blue-500/30',       dot: 'bg-blue-400',     lineColor: '#3b82f6' },
+  subordinate:        { bg: 'bg-purple-950/25',   badge: 'bg-purple-500/15 text-purple-300 border border-purple-500/30', dot: 'bg-purple-400',   lineColor: '#a855f7' },
+  indirect_discourse: { bg: 'bg-amber-950/25',    badge: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',    dot: 'bg-amber-400',    lineColor: '#f59e0b' },
+  indirect_statement: { bg: 'bg-amber-950/25',    badge: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',    dot: 'bg-amber-400',    lineColor: '#f59e0b' },
+  relative:           { bg: 'bg-green-950/25',    badge: 'bg-green-500/15 text-green-300 border border-green-500/30',    dot: 'bg-green-400',    lineColor: '#22c55e' },
+  participial:        { bg: 'bg-rose-950/25',     badge: 'bg-rose-500/15 text-rose-300 border border-rose-500/30',       dot: 'bg-rose-400',     lineColor: '#f43f5e' },
+  genitive_absolute:  { bg: 'bg-fuchsia-950/25',  badge: 'bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-500/30', dot: 'bg-fuchsia-400', lineColor: '#d946ef' },
 };
 
 // Hex colors match Tailwind's palette for use in inline styles
@@ -76,19 +81,21 @@ const ROLE_STYLES: Record<
   string,
   { text: string; bg: string; color: string; label: string; short: string }
 > = {
-  subject:              { text: 'text-yellow-300',  bg: 'bg-yellow-300/10',  color: '#fde047', label: 'Subject',           short: 'subject'      },
-  verb:                 { text: 'text-red-400',     bg: 'bg-red-400/10',     color: '#f87171', label: 'Verb',              short: 'verb'         },
-  direct_object:        { text: 'text-green-300',   bg: 'bg-green-300/10',   color: '#86efac', label: 'Direct Object',     short: 'direct obj.'  },
-  indirect_object:      { text: 'text-teal-300',    bg: 'bg-teal-300/10',    color: '#5eead4', label: 'Indirect Object',   short: 'indir. obj.'  },
-  adj:                  { text: 'text-purple-300',  bg: 'bg-purple-300/10',  color: '#d8b4fe', label: 'Adjectival',        short: 'adj.'         },
-  adv:                  { text: 'text-violet-300',  bg: 'bg-violet-300/10',  color: '#c4b5fd', label: 'Adverbial',         short: 'adv.'         },
-  preposition:          { text: 'text-gray-400',    bg: 'bg-gray-400/10',    color: '#9ca3af', label: 'Preposition',       short: 'prep.'        },
-  object_of_preposition:{ text: 'text-sky-300',     bg: 'bg-sky-300/10',     color: '#7dd3fc', label: 'Object of Prep.',   short: 'prep. obj.'   },
-  conjunction:          { text: 'text-gray-500',    bg: 'bg-gray-500/10',    color: '#6b7280', label: 'Conjunction',       short: 'conj.'        },
-  predicate_nominative: { text: 'text-orange-300',  bg: 'bg-orange-300/10',  color: '#fdba74', label: 'Pred. Nominative',  short: 'pred. nom.'   },
-  predicate_adjective:  { text: 'text-orange-200',  bg: 'bg-orange-200/10',  color: '#fed7aa', label: 'Pred. Adjective',   short: 'pred. adj.'   },
-  vocative:             { text: 'text-pink-300',    bg: 'bg-pink-300/10',    color: '#f9a8d4', label: 'Vocative',          short: 'vocative'     },
-  other:                { text: 'text-zinc-400',    bg: 'bg-zinc-400/10',    color: '#a1a1aa', label: 'Other',             short: 'other'        },
+  subject:              { text: 'text-yellow-300',   bg: 'bg-yellow-300/10',   color: '#fde047', label: 'Subject',             short: 'subject'      },
+  verb:                 { text: 'text-red-400',      bg: 'bg-red-400/10',      color: '#f87171', label: 'Verb',                short: 'verb'         },
+  direct_object:        { text: 'text-green-300',    bg: 'bg-green-300/10',    color: '#86efac', label: 'Direct Object',       short: 'direct obj.'  },
+  indirect_object:      { text: 'text-teal-300',     bg: 'bg-teal-300/10',     color: '#5eead4', label: 'Indirect Object',     short: 'indir. obj.'  },
+  adj:                  { text: 'text-purple-300',   bg: 'bg-purple-300/10',   color: '#d8b4fe', label: 'Adjectival',          short: 'adj.'         },
+  adv:                  { text: 'text-violet-300',   bg: 'bg-violet-300/10',   color: '#c4b5fd', label: 'Adverbial',           short: 'adv.'         },
+  preposition:          { text: 'text-gray-400',     bg: 'bg-gray-400/10',     color: '#9ca3af', label: 'Preposition',         short: 'prep.'        },
+  object_of_preposition:{ text: 'text-sky-300',      bg: 'bg-sky-300/10',      color: '#7dd3fc', label: 'Object of Prep.',     short: 'prep. obj.'   },
+  conjunction:          { text: 'text-gray-500',     bg: 'bg-gray-500/10',     color: '#6b7280', label: 'Conjunction',         short: 'conj.'        },
+  predicate_nominative: { text: 'text-orange-300',   bg: 'bg-orange-300/10',   color: '#fdba74', label: 'Pred. Nominative',    short: 'pred. nom.'   },
+  predicate_adjective:  { text: 'text-orange-200',   bg: 'bg-orange-200/10',   color: '#fed7aa', label: 'Pred. Adjective',     short: 'pred. adj.'   },
+  vocative:             { text: 'text-pink-300',     bg: 'bg-pink-300/10',     color: '#f9a8d4', label: 'Vocative',            short: 'vocative'     },
+  article:              { text: 'text-sky-200',      bg: 'bg-sky-200/10',      color: '#bae6fd', label: 'Article',             short: 'art.'         },
+  genitive_absolute:    { text: 'text-fuchsia-300',  bg: 'bg-fuchsia-300/10',  color: '#f0abfc', label: 'Genitive Absolute',   short: 'gen.abs.'     },
+  other:                { text: 'text-zinc-400',     bg: 'bg-zinc-400/10',     color: '#a1a1aa', label: 'Other',               short: 'other'        },
 };
 
 const GROUP_PALETTE = [
@@ -147,13 +154,14 @@ function WordTooltip({ word }: { word: Word }) {
 
   const morphRows: [string, string][] = (
     [
-      m.person ? ['Person', m.person]      : null,
-      m.tense  ? ['Tense',  cap(m.tense)]  : null,
-      m.mood   ? ['Mood',   cap(m.mood)]   : null,
-      m.voice  ? ['Voice',  cap(m.voice)]  : null,
-      m.case   ? ['Case',   cap(m.case)]   : null,
-      m.number ? ['Number', cap(m.number)] : null,
-      m.gender ? ['Gender', cap(m.gender)] : null,
+      m.person ? ['Person', m.person]        : null,
+      m.tense  ? ['Tense',  cap(m.tense)]   : null,
+      m.aspect ? ['Aspect', cap(m.aspect)]  : null,
+      m.mood   ? ['Mood',   cap(m.mood)]    : null,
+      m.voice  ? ['Voice',  cap(m.voice)]   : null,
+      m.case   ? ['Case',   cap(m.case)]    : null,
+      m.number ? ['Number', cap(m.number)]  : null,
+      m.gender ? ['Gender', cap(m.gender)]  : null,
     ] as ([string, string] | null)[]
   ).filter(Boolean) as [string, string][];
 

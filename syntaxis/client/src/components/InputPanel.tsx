@@ -1,15 +1,24 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import posthog from 'posthog-js';
+import { useLanguage } from '../contexts/LanguageContext';
+import LanguageToggle from './LanguageToggle';
 
 const MAX_CHARS = 500;
 
-const EXAMPLES = [
+const LATIN_EXAMPLES = [
   { text: 'Gallia est omnis divisa in partes tres', author: 'Caesar' },
   { text: 'Arma virumque cano, Troiae qui primus ab oris', author: 'Vergil' },
   { text: 'Quo usque tandem abutere, Catilina, patientia nostra?', author: 'Cicero' },
   { text: 'Dum Romae consulitur, Saguntum expugnatur', author: 'Livy' },
-] as const;
+];
+
+const GREEK_EXAMPLES = [
+  { text: 'ἄνδρα μοι ἔννεπε, μοῦσα, πολύτροπον', author: 'Homer (Od.)' },
+  { text: 'μῆνιν ἄειδε θεά, Πηληϊάδεω Ἀχιλῆος', author: 'Homer (Il.)' },
+  { text: 'γνῶθι σεαυτόν', author: 'Delphi' },
+  { text: 'ἐν ἀρχῇ ἦν ὁ λόγος', author: 'John 1:1' },
+];
 
 interface Props {
   onSubmit: (sentence: string) => void;
@@ -18,7 +27,11 @@ interface Props {
 }
 
 export default function InputPanel({ onSubmit, isLoading, error }: Props) {
+  const { language } = useLanguage();
   const [sentence, setSentence] = useState('');
+
+  const EXAMPLES = language === 'greek' ? GREEK_EXAMPLES : LATIN_EXAMPLES;
+  const placeholder = language === 'greek' ? 'Γράψον πρότασιν…' : 'Sententiam inscribe…';
 
   const charCount = sentence.length;
   const overLimit = charCount > MAX_CHARS;
@@ -71,17 +84,26 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
         </motion.h1>
       </div>
 
-      {/* ── Subtagline (Fraunces italic, cream). Same styling as
-           before — only the copy changed. */}
+      {/* ── Subtagline ─────────────────────────────────────────── */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.55, delay: 0.15 }}
-        className="font-fraunces italic text-center mb-10"
+        className="font-fraunces italic text-center mb-5"
         style={{ fontSize: '18px', color: '#d4d0c8' }}
       >
-        A free sentence flow analyzer for Latin
+        A free sentence flow analyzer for the classical languages
       </motion.p>
+
+      {/* ── Language toggle ─────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.45, delay: 0.22 }}
+        className="flex justify-center mb-8"
+      >
+        <LanguageToggle />
+      </motion.div>
 
       {/* ── Search bar + form ───────────────────────────────────── */}
       <motion.form
@@ -108,7 +130,7 @@ export default function InputPanel({ onSubmit, isLoading, error }: Props) {
             type="text"
             value={sentence}
             onChange={(e) => setSentence(e.target.value)}
-            placeholder="Sententiam inscribe…"
+            placeholder={placeholder}
             disabled={isLoading}
             spellCheck={false}
             autoComplete="off"

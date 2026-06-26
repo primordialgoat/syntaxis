@@ -91,6 +91,15 @@ export default function About({ onNavigate }: Props) {
           </p>
 
           <p
+            className="font-serif text-[17px] leading-[1.75] mb-[26px]"
+            style={{ color: '#eae3d4' }}
+          >
+            Syntaxis supports both Latin and Ancient Greek. For Greek, it handles the five-case system, the dual
+            number, the optative mood, the middle voice, and Greek-specific constructions like the genitive absolute
+            and the articular infinitive.
+          </p>
+
+          <p
             className="font-serif text-[17px] leading-[1.75] m-0"
             style={{ color: '#eae3d4' }}
           >

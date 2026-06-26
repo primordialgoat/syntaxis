@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import posthog from 'posthog-js';
 import App from './App';
+import { LanguageProvider } from './contexts/LanguageContext';
 import './index.css';
 
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
@@ -14,6 +15,8 @@ if (posthogKey) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <LanguageProvider>
+      <App />
+    </LanguageProvider>
   </React.StrictMode>
 );

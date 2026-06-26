@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: #1a1612;
+}
+
+:root[data-lang="greek"] {
+  --color-bg: #0d1520;
+}
+
 @layer base {
   html {
     height: 100%;
@@ -10,8 +18,8 @@
   body {
     min-height: 100%;
     font-size: 16px;
-    /* Warm dark parchment-in-darkness background */
-    background-color: #1a1612;
+    background-color: var(--color-bg);
+    transition: background-color 0.2s ease;
     @apply text-zinc-100 antialiased;
     position: relative;
     /* Subtle paper grain */

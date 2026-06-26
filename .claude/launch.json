@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "syntaxis-client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "syntaxis/client",
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}
