@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import posthog from 'posthog-js';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -399,6 +400,291 @@ function TranslationCopyButton({ text }: { text: string }) {
   );
 }
 
+// ─── Clause report ────────────────────────────────────────────────────────────
+//
+// A low-contrast "Report" link in each card's header opens an inline panel at
+// the bottom of the card. The note is posted to /api/feedback together with the
+// clause's context, so the email says exactly which interpretation was flagged.
+
+const MAX_REPORT_CHARS = 2000;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type ReportState = 'closed' | 'open' | 'sent';
+
+function ReportTrigger({ state, onClick }: { state: ReportState; onClick: () => void }) {
+  const sent = state === 'sent';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={sent}
+      aria-expanded={state === 'open'}
+      title={sent ? 'Thanks — this clause has been reported' : 'Report an incorrect interpretation'}
+      className={[
+        'flex items-center gap-1 shrink-0 mt-1 px-1.5 py-1 -mr-1.5 rounded',
+        'font-sans text-[11px] select-none transition-colors duration-150',
+        sent
+          ? 'text-amber-500/60 cursor-default'
+          : state === 'open'
+            ? 'text-zinc-400'
+            : 'text-zinc-600 hover:text-zinc-400',
+      ].join(' ')}
+    >
+      {sent ? (
+        <>
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 8.5l3.5 3.5L13 4.5" />
+          </svg>
+          Reported
+        </>
+      ) : (
+        <>
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3.5 14.5V2.5M3.5 2.5h8l-1.75 3 1.75 3h-8" />
+          </svg>
+          Report
+        </>
+      )}
+    </button>
+  );
+}
+
+interface ReportPanelProps {
+  clause: Clause;
+  sentence: string;
+  fullTranslation: string;
+  onCancel: () => void;
+  onSent: () => void;
+}
+
+function ReportPanel({ clause, sentence, fullTranslation, onCancel, onSent }: ReportPanelProps) {
+  const { language } = useLanguage();
+  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [error, setError] = useState<string | null>(null);
+
+  const trimmedMessage = message.trim();
+  const trimmedEmail = email.trim();
+  const emailValid = trimmedEmail.length === 0 || EMAIL_REGEX.test(trimmedEmail);
+  const canSubmit =
+    trimmedMessage.length > 0 &&
+    trimmedMessage.length <= MAX_REPORT_CHARS &&
+    emailValid &&
+    status !== 'submitting';
+
+  // Collapse the panel shortly after a successful send.
+  useEffect(() => {
+    if (status !== 'success') return;
+    const timer = window.setTimeout(onSent, 2200);
+    return () => window.clearTimeout(timer);
+  }, [status, onSent]);
+
+  const submit = async () => {
+    if (!canSubmit) return;
+    setStatus('submitting');
+    setError(null);
+
+    posthog.capture('clause_reported', {
+      clause_type: clause.type,
+      language,
+      message_length: trimmedMessage.length,
+      has_email: trimmedEmail.length > 0,
+    });
+
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: trimmedMessage,
+          email: trimmedEmail || undefined,
+          report: {
+            sentence,
+            language,
+            clauseLabel: clause.label,
+            clauseTranslation: clause.translation ?? '',
+            fullTranslation,
+            words: (clause.words ?? []).map((w) => ({
+              text: w.text ?? '',
+              lemma: w.lemma ?? '',
+              role: w.role ?? '',
+              partOfSpeech: w.partOfSpeech ?? '',
+            })),
+          },
+        }),
+      });
+
+      const data: unknown = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const msg =
+          typeof data === 'object' &&
+          data !== null &&
+          'error' in data &&
+          typeof (data as { error: unknown }).error === 'string'
+            ? (data as { error: string }).error
+            : `Server error ${res.status}`;
+        throw new Error(msg);
+      }
+
+      setStatus('success');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
+      setStatus('error');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && status !== 'submitting') {
+      e.preventDefault();
+      onCancel();
+    } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      void submit();
+    }
+  };
+
+  const fieldClass = [
+    'w-full rounded-lg bg-zinc-900/70 ring-1 ring-zinc-700/60',
+    'focus:outline-none focus:ring-amber-500/40 transition-all duration-200',
+    'text-zinc-100 placeholder:text-zinc-600',
+    'disabled:opacity-50 disabled:cursor-not-allowed',
+  ].join(' ');
+
+  return (
+    <motion.div
+      key="report"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.22, ease: 'easeInOut' }}
+      className="overflow-hidden"
+    >
+      <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-white/5">
+        <AnimatePresence mode="wait" initial={false}>
+          {status === 'success' ? (
+            <motion.p
+              key="thanks"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="font-serif italic text-sm text-amber-400/90"
+            >
+              Thanks — flagged for review.
+            </motion.p>
+          ) : (
+            <motion.form
+              key="form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onSubmit={(e) => { e.preventDefault(); void submit(); }}
+              onKeyDown={handleKeyDown}
+              className="space-y-2"
+            >
+              <label
+                htmlFor={`report-${clause.id}`}
+                className="block text-[10px] font-sans uppercase tracking-[0.16em] text-zinc-600 select-none"
+              >
+                What looks wrong in this clause?
+              </label>
+              <textarea
+                id={`report-${clause.id}`}
+                autoFocus
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={
+                  language === 'greek'
+                    ? 'e.g. “τούτων” should be a genitive absolute, not “other”'
+                    : 'e.g. “Romae” is locative, not “other”'
+                }
+                rows={2}
+                maxLength={MAX_REPORT_CHARS}
+                disabled={status === 'submitting'}
+                className={['px-3 py-2 resize-none font-serif text-sm', fieldClass].join(' ')}
+              />
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email (optional, for a reply)"
+                  autoComplete="email"
+                  maxLength={200}
+                  disabled={status === 'submitting'}
+                  aria-invalid={!emailValid}
+                  className={['flex-1 min-w-0 px-3 py-1.5 font-sans text-xs', fieldClass].join(' ')}
+                />
+                <div className="flex gap-2 justify-end shrink-0">
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    disabled={status === 'submitting'}
+                    className="px-3 py-1.5 rounded-lg font-sans text-xs text-zinc-500 hover:text-zinc-300 transition-colors duration-150 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!canSubmit}
+                    className={[
+                      'flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg',
+                      'font-sans font-bold text-xs transition-all duration-150',
+                      'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/25',
+                      !canSubmit ? 'opacity-50 cursor-not-allowed' : '',
+                    ].join(' ')}
+                  >
+                    {status === 'submitting' ? (
+                      <>
+                        <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                        <span>Sending…</span>
+                      </>
+                    ) : (
+                      'Send report →'
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {!emailValid && trimmedEmail.length > 0 && (
+                <p className="font-sans text-[11px] text-zinc-500">
+                  Enter a valid email, or leave it blank.
+                </p>
+              )}
+
+              <AnimatePresence>
+                {status === 'error' && error && (
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-950/40 border border-red-500/25 text-red-400 text-xs font-sans">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mt-0.5 shrink-0">
+                        <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                      <span>{error}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.form>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── ClauseCard ───────────────────────────────────────────────────────────────
 
 interface ClauseCardProps {
@@ -408,6 +694,9 @@ interface ClauseCardProps {
   wordMap: Map<string, Word>;
   isMobile: boolean;
   showTranslation: boolean;
+  isStreaming: boolean;
+  sentence: string;
+  fullTranslation: string;
 }
 
 function ClauseCard({
@@ -417,8 +706,14 @@ function ClauseCard({
   wordMap,
   isMobile,
   showTranslation,
+  isStreaming,
+  sentence,
+  fullTranslation,
 }: ClauseCardProps) {
   const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
+  const [reportState, setReportState] = useState<ReportState>('closed');
+  const closeReport = useCallback(() => setReportState('closed'), []);
+  const markReported = useCallback(() => setReportState('sent'), []);
   const cs = CLAUSE_STYLES[clause.type] ?? CLAUSE_STYLES.subordinate;
   const indent = clause.level * (isMobile ? 12 : 36);
 
@@ -481,16 +776,25 @@ function ClauseCard({
         }}
         className={['p-5 sm:p-7', cs.bg].join(' ')}
       >
-        {/* Badge */}
-        <div
-          className={[
-            'inline-flex items-center gap-2 text-xs sm:text-sm font-sans font-medium',
-            'px-3 py-1.5 rounded-full mb-4 sm:mb-5',
-            cs.badge,
-          ].join(' ')}
-        >
-          <span className={['w-2 h-2 rounded-full shrink-0', cs.dot].join(' ')} />
-          {clause.label}
+        {/* Badge + report trigger */}
+        <div className="flex items-start justify-between gap-3 mb-4 sm:mb-5">
+          <div
+            className={[
+              'inline-flex items-center gap-2 text-xs sm:text-sm font-sans font-medium',
+              'px-3 py-1.5 rounded-full',
+              cs.badge,
+            ].join(' ')}
+          >
+            <span className={['w-2 h-2 rounded-full shrink-0', cs.dot].join(' ')} />
+            {clause.label}
+          </div>
+          {/* Hidden mid-stream: the clause may still be partial */}
+          {!isStreaming && (
+            <ReportTrigger
+              state={reportState}
+              onClick={() => setReportState((s) => (s === 'open' ? 'closed' : 'open'))}
+            />
+          )}
         </div>
 
         {/* Word tokens */}
@@ -556,6 +860,19 @@ function ClauseCard({
                 </p>
               </div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Inline report panel */}
+        <AnimatePresence initial={false}>
+          {reportState === 'open' && !isStreaming && (
+            <ReportPanel
+              clause={clause}
+              sentence={sentence}
+              fullTranslation={fullTranslation}
+              onCancel={closeReport}
+              onSent={markReported}
+            />
           )}
         </AnimatePresence>
       </motion.div>
@@ -788,13 +1105,18 @@ export default function SentenceAnalysis({ result, isStreaming = false }: Props)
       <div>
         {orderedClauses.map((clause) => (
           <ClauseCard
-            key={clause.id}
+            // Clause ids (clause_1, …) repeat across analyses; include the
+            // sentence so report state never carries over to a new result.
+            key={`${result.original}::${clause.id}`}
             clause={clause}
             hoveredWordId={hoveredWordId}
             setHoveredWordId={setHoveredWordId}
             wordMap={wordMap}
             isMobile={isMobile}
             showTranslation={showTranslation}
+            isStreaming={isStreaming}
+            sentence={result.original}
+            fullTranslation={result.fullTranslation ?? ''}
           />
         ))}
       </div>
